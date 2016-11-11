@@ -16,6 +16,7 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+        //modified the build to globally distribute the api key to access openweathermap
         buildTypes.each {
             it.buildConfigField 'String', 'OPEN_WEATHER_MAP_API_KEY', '"0e9750524710a918fc4fd76039f2e205"'
         }

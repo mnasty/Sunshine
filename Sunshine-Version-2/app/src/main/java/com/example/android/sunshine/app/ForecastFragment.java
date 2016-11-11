@@ -4,6 +4,7 @@ package com.example.android.sunshine.app;
  * Created by Mick on 10/13/16.
  */
 
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -16,6 +17,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONArray;
+
+import android.text.format.Time;
+import java.text.SimpleDateFormat;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -56,7 +64,7 @@ public class ForecastFragment extends Fragment {
         if (id == R.id.action_refresh) {
             FetchWeatherTask f = new FetchWeatherTask();
             //f.doInBackground();
-            f.execute();
+            f.execute("63101");
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -81,12 +89,12 @@ public class ForecastFragment extends Fragment {
         return rootView;
     }
 
-    public class FetchWeatherTask extends AsyncTask<Void, Void, Void> {
+    public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
 
         private final String LOG_TAG = FetchWeatherTask.class.getSimpleName();
 
         @Override
-        protected Void doInBackground(Void... params) {
+        protected Void doInBackground(String... postcode) {
             // These two need to be declared outside the try/catch
             // so that they can be closed in the finally block.
             HttpURLConnection urlConnection = null;
@@ -95,13 +103,35 @@ public class ForecastFragment extends Fragment {
             // Will contain the raw JSON response as a string.
             String forecastJsonStr = null;
 
+            //user input postcode's Integer type converted to string for Uri.Builder
+            //String postcodeString = postcode.toString();
+
+            //**test purposes only
+            //String postcodeString = "63101";
+
             try {
-                // Construct the URL for the OpenWeatherMap query
+                //Uri.Builder to append the url based on users postal code input
+                Uri.Builder uri = new Uri.Builder();
+                uri.scheme("http");
+                uri.authority("api.openweathermap.org");
+                uri.appendPath("data");
+                uri.appendPath("2.5");
+                uri.appendPath("forecast");
+                uri.appendPath("daily");
+                uri.appendQueryParameter("q", postcode[0]);
+                uri.appendQueryParameter("mode", "json");
+                uri.appendQueryParameter("units", "metric");
+                uri.appendQueryParameter("cnt", "7");
+                //modified app/build.gradle to globally distribute the api key for openweathermap and contained it here for the network call
+                uri.appendQueryParameter("APPID", BuildConfig.OPEN_WEATHER_MAP_API_KEY);
+
                 // Possible parameters are avaiable at OWM's forecast API page, at
                 // http://openweathermap.org/API#forecast
-                String baseUrl = "http://api.openweathermap.org/data/2.5/forecast/daily?q=94043&mode=json&units=metric&cnt=7";
-                String apiKey = "&APPID=" + BuildConfig.OPEN_WEATHER_MAP_API_KEY;
-                URL url = new URL(baseUrl.concat(apiKey));
+                //String baseUrl = "http://api.openweathermap.org/data/2.5/forecast/daily?q=94043&mode=json&units=metric&cnt=7";
+                String baseUrl = uri.build().toString();
+
+                //String apiKey = "&APPID=" + BuildConfig.OPEN_WEATHER_MAP_API_KEY;
+                URL url = new URL(baseUrl);
 
                 // Create the request to OpenWeatherMap, and open the connection
                 urlConnection = (HttpURLConnection) url.openConnection();
@@ -130,12 +160,17 @@ public class ForecastFragment extends Fragment {
                     return null;
                 }
                 forecastJsonStr = buffer.toString();
-            } catch (IOException e) {
+
+
+            } catch (IOException e)
+            {
                 Log.e(LOG_TAG, "Error ", e);
                 // If the code didn't successfully get the weather data, there's no point in attemping
                 // to parse it.
                 return null;
-            } finally {
+            }
+            finally
+            {
                 if (urlConnection != null) {
                     urlConnection.disconnect();
                 }
