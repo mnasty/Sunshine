@@ -25,6 +25,8 @@ import org.json.JSONArray;
 import android.text.format.Time;
 import java.text.SimpleDateFormat;
 
+import java.util.List;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,7 +40,7 @@ import java.util.Arrays;
 public class ForecastFragment extends Fragment {
     private ArrayAdapter<String> mForecastAdapter;
 
-    public ForecastFragment() {
+    public void ForecastFragment() {
     }
 
     @Override
@@ -63,7 +65,6 @@ public class ForecastFragment extends Fragment {
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_refresh) {
             FetchWeatherTask f = new FetchWeatherTask();
-            //f.doInBackground();
             f.execute("63101");
             return true;
         }
@@ -75,13 +76,11 @@ public class ForecastFragment extends Fragment {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
-        ArrayList<String> strings = new ArrayList<>(Arrays.asList("Today-Sunny-88/63",
-                "Tomorrow-Foggy-70/46", "Wednesday-Cloudy-72/63", "Wednesday-Cloudy-72/63",
-                "Thursday-Rainy-64/51", "Friday-Foggy-70/46", "Saturday-Sunny-76/68",
-                "Sunday-Shitty-20/45", "Monday-Hurricane-Your going to die"));
+        FetchWeatherTask f = new FetchWeatherTask();
+        f.execute("63101");
 
-        mForecastAdapter = new ArrayAdapter<>(getActivity(),
-                R.layout.list_item_forecast, R.id.list_item_forecast_textview, strings);
+        List<String> nullForecastList = new ArrayList<>(Arrays.asList("gathering data...", "gathering data...", "gathering data...", "gathering data...", "gathering data...", "gathering data...", "gathering data..."));
+        mForecastAdapter = new ArrayAdapter<>(getActivity(), R.layout.list_item_forecast, R.id.list_item_forecast_textview, nullForecastList);
 
         ListView listView = (ListView) rootView.findViewById(R.id.listview_forecast);
         listView.setAdapter(mForecastAdapter);
@@ -90,6 +89,8 @@ public class ForecastFragment extends Fragment {
     }
 
     public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
+
+        int numDays = 7;
 
         private final String LOG_TAG = FetchWeatherTask.class.getSimpleName();
 
@@ -205,8 +206,6 @@ public class ForecastFragment extends Fragment {
             // Will contain the raw JSON response as a string.
             String forecastJsonStr = null;
 
-            int numDays = 7;
-
             try {
                 //Uri.Builder to append the url based on users postal code input
                 Uri.Builder uri = new Uri.Builder();
@@ -261,7 +260,8 @@ public class ForecastFragment extends Fragment {
 
                 Log.v("!!!!", forecastJsonStr);
 
-            } catch (IOException e)
+            }
+            catch (IOException e)
             {
                 Log.e(LOG_TAG, "Error ", e);
                 // If the code didn't successfully get the weather data, there's no point in attemping
@@ -292,8 +292,20 @@ public class ForecastFragment extends Fragment {
                 e.printStackTrace();
             }
             // This will only happen if there was an error getting or parsing the forecast.
-
             return null;
+        }
+
+        @Override
+        protected void onPostExecute(String[] result) {
+            super.onPostExecute(result);
+            if (result != null)
+            {
+                mForecastAdapter.clear();
+                for(String dayForecastString : result)
+                {
+                    mForecastAdapter.add(dayForecastString);
+                }
+            }
         }
     }
 }
