@@ -14,7 +14,6 @@ public class WeatherDataParser {
         JSONArray a = jObj.getJSONArray("list");
 
         //array for the seven days weather forecast
-        //run into an arrayIndex out of bounds exception when array is instantiated at 6 spaces in memory for whatever reason..
         double[] sevenDays = new double[7];
 
         //for loop to iterate through JSON Object/Array

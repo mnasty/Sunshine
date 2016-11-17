@@ -4,10 +4,13 @@ package com.example.android.sunshine.app;
  * Created by Mick on 10/13/16.
  */
 
+import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.text.format.Time;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -15,17 +18,13 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.json.JSONArray;
-
-import android.text.format.Time;
-import java.text.SimpleDateFormat;
-
-import java.util.List;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -33,8 +32,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 //@SuppressWarnings("all")
 public class ForecastFragment extends Fragment {
@@ -57,9 +58,7 @@ public class ForecastFragment extends Fragment {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
+        // Handle action bar item clicks here.
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
@@ -76,14 +75,26 @@ public class ForecastFragment extends Fragment {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
+
+
         FetchWeatherTask f = new FetchWeatherTask();
         f.execute("63101");
 
-        List<String> nullForecastList = new ArrayList<>(Arrays.asList("gathering data...", "gathering data...", "gathering data...", "gathering data...", "gathering data...", "gathering data...", "gathering data..."));
-        mForecastAdapter = new ArrayAdapter<>(getActivity(), R.layout.list_item_forecast, R.id.list_item_forecast_textview, nullForecastList);
+        final List<String> forecastList = new ArrayList<>(Arrays.asList("gathering data...", "gathering data...", "gathering data...", "gathering data...", "gathering data...", "gathering data...", "gathering data..."));
+        mForecastAdapter = new ArrayAdapter<>(getActivity(), R.layout.list_item_forecast, R.id.list_item_forecast_textview, forecastList);
 
         ListView listView = (ListView) rootView.findViewById(R.id.listview_forecast);
         listView.setAdapter(mForecastAdapter);
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Context thisContext = getActivity().getApplicationContext();
+                CharSequence text = "Item " + (position + 1) + ": " + forecastList.get(position);
+                Intent detailIntent = new Intent(thisContext, DetailActivity.class);
+                detailIntent.putExtra("text", text);
+                startActivity(detailIntent);
+            }
+        });
 
         return rootView;
     }
@@ -94,9 +105,6 @@ public class ForecastFragment extends Fragment {
 
         private final String LOG_TAG = FetchWeatherTask.class.getSimpleName();
 
-        /* The date/time conversion code is going to be moved outside the asynctask later,
-        * so for convenience we're breaking it out into its own method now.
-        */
         private String getReadableDateString(long time){
             // Because the API returns a unix timestamp (measured in seconds),
             // it must be converted to milliseconds in order to be converted to valid date.
@@ -108,7 +116,7 @@ public class ForecastFragment extends Fragment {
          * Prepare the weather high/lows for presentation.
          */
         private String formatHighLows(double high, double low) {
-            // For presentation, assume the user doesn't care about tenths of a degree.
+            //the user doesn't care about tenths of a degree.
             long roundedHigh = Math.round(high);
             long roundedLow = Math.round(low);
 
@@ -120,8 +128,8 @@ public class ForecastFragment extends Fragment {
          * Take the String representing the complete forecast in JSON Format and
          * pull out the data we need to construct the Strings needed for the wireframes.
          *
-         * Fortunately parsing is easy:  constructor takes the JSON string and converts it
-         * into an Object hierarchy for us.
+         * Constructor takes the JSON string and converts it
+         * into an Object hierarchy.
          */
         private String[] getWeatherDataFromJson(String forecastJsonStr, int numDays)
                 throws JSONException {
@@ -168,6 +176,7 @@ public class ForecastFragment extends Fragment {
                 // into something human-readable, since most people won't read "1400356800" as
                 // "this saturday".
                 long dateTime;
+
                 // Cheating to convert this to UTC time, which is what we want anyhow
                 dateTime = dayTime.setJulianDay(julianStartDay+i);
                 day = getReadableDateString(dateTime);
@@ -219,11 +228,11 @@ public class ForecastFragment extends Fragment {
                 uri.appendQueryParameter("mode", "json");
                 uri.appendQueryParameter("units", "imperial");
                 uri.appendQueryParameter("cnt", "7");
+
                 //modified app/build.gradle to globally distribute the api key for openweathermap and contained it here for the network call
                 uri.appendQueryParameter("APPID", BuildConfig.OPEN_WEATHER_MAP_API_KEY);
 
-                // Possible parameters are avaiable at OWM's forecast API page, at
-                // http://openweathermap.org/API#forecast
+                //Possible parameters @ http://openweathermap.org/API#forecast
                 //String baseUrl = "http://api.openweathermap.org/data/2.5/forecast/daily?q=94043&mode=json&units=metric&cnt=7";
                 String baseUrl = uri.build().toString();
 
@@ -246,9 +255,7 @@ public class ForecastFragment extends Fragment {
 
                 String line;
                 while ((line = reader.readLine()) != null) {
-                    // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
-                    // But it does make debugging a *lot* easier if you print out the completed
-                    // buffer for debugging.
+
                     buffer.append(line + "\n");
                 }
 
@@ -257,8 +264,6 @@ public class ForecastFragment extends Fragment {
                     return null;
                 }
                 forecastJsonStr = buffer.toString();
-
-                Log.v("!!!!", forecastJsonStr);
 
             }
             catch (IOException e)
@@ -270,6 +275,7 @@ public class ForecastFragment extends Fragment {
             }
             finally
             {
+                //close the stream whether successful or not..
                 if (urlConnection != null) {
                     urlConnection.disconnect();
                 }
@@ -282,6 +288,7 @@ public class ForecastFragment extends Fragment {
                 }
             }
 
+            //implemented in a try/catch so app dosen't crash if the data isn't received or parsed right
             try
             {
                 return getWeatherDataFromJson(forecastJsonStr, numDays);
@@ -291,15 +298,17 @@ public class ForecastFragment extends Fragment {
                 Log.e(LOG_TAG, e.getMessage(), e);
                 e.printStackTrace();
             }
-            // This will only happen if there was an error getting or parsing the forecast.
+            // Null will only happen if there was an error getting or parsing the forecast.
             return null;
         }
 
         @Override
         protected void onPostExecute(String[] result) {
             super.onPostExecute(result);
+
             if (result != null)
             {
+                //clear the forecast adapter array and add the real-time weather data one block at a time
                 mForecastAdapter.clear();
                 for(String dayForecastString : result)
                 {
