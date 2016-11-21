@@ -3,8 +3,25 @@
 
     <string name="app_name">Sunshine</string>
     <string name="hello_world">Hello world!</string>
+
     <string name="action_settings">Settings</string>
     <string name="action_refresh">Refresh Me!</string>
-    <string name="title_activity_detail">DetailActivity</string>
+    <string name="action_showMap_title">Show Location On Map..</string>
+
+    <string name="title_activity_detail">Up Close</string>
+    <string name="title_settings_activity">Settings</string>
+
+    <string name="pref_location_label">Location</string>
+    <string name="pref_location_key" translatable="false">location</string>
+    <string name="pref_location_default" translatable="false">63101</string>
+
+    <string name="settings_title">Settings</string>
+    
+    <string name="pref_cat_a_title">Set Location (6 digit ZIP Code)</string>
+    <string name="pref_cat_b_title">Select display units (C/F)</string>
+    <string name="pref_temp_label">Units</string>
+    <string name="pref_temp_key">units</string>
+    <string name="pref_temp_default">metric</string>
+
 
 </resources>

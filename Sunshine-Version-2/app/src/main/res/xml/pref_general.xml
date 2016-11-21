@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:droid="http://schemas.android.com/apk/res/android"
+    droid:layout_width="match_parent"
+    droid:layout_height="match_parent"
+    droid:title="@string/settings_title">
+
+    <PreferenceCategory
+        droid:title="@string/pref_cat_a_title">
+
+        <EditTextPreference
+        droid:title="@string/pref_location_label"
+        droid:key="@string/pref_location_key"
+        droid:defaultValue="@string/pref_location_default"
+        droid:inputType="text"
+        droid:singleLine="true"
+        />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        droid:title="@string/pref_cat_b_title">
+
+        <ListPreference
+            droid:title="@string/pref_temp_label"
+            droid:key="@string/pref_temp_key"
+            droid:entries="@array/string_prefs_units"
+            droid:entryValues="@array/string_prefs_units_entryValues"
+            droid:defaultValue="@string/pref_temp_default"
+            />
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

@@ -6,9 +6,11 @@ package com.example.android.sunshine.app;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.text.format.Time;
 import android.util.Log;
@@ -21,6 +23,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -41,7 +44,63 @@ import java.util.List;
 public class ForecastFragment extends Fragment {
     private ArrayAdapter<String> mForecastAdapter;
 
+    //set number of days for the forecast query
+    int numDays = 7;
+
     public void ForecastFragment() {
+    }
+
+    //series of helper methods to simplify repeated processes & reduce repeating self
+
+    //launches the asyncTask to get weather data from server with the zip code currently stored in the settings
+    private void updateForecast()
+    {
+        FetchWeatherTask f = new FetchWeatherTask();
+        f.execute(getZip());
+    }
+
+    //retrieves the current units of measure stored in SharedPreferences
+    private String getUnits()
+    {
+        //creates object, retrieves defaults
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        //assigns key (choice) or the specified default if otherwise unavailable
+        String units = sharedPref.getString(getString(R.string.pref_temp_key), getString(R.string.pref_temp_default));
+        return units;
+    }
+
+    //retrieves the current zip code location stored in SharedPreferences
+    private String getZip()
+    {
+        //..
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        //..
+        String location = sharedPref.getString(getString(R.string.pref_location_key), getString(R.string.pref_location_default));
+        return location;
+    }
+
+    //provides the actionable code for the menu option to show current location (zip in SharedPrefs) on map
+    private void showMap(String zip)
+    {
+        //uses the get zip method with the beginning of the query to construct the URI
+        Uri geoLocation = Uri.parse("geo:0,0?q=" + zip);
+        Context mContext = getActivity();
+        Intent mapIntent = new Intent(Intent.ACTION_VIEW);
+        mapIntent.setData(geoLocation);
+
+        //launches implicit intent if there is a supported app available
+        if (mapIntent.resolveActivity(mContext.getPackageManager()) != null)
+        {
+            startActivity(mapIntent);
+        }
+        //if there is no suitable app to open the geoLocation query in, we write a toast notifying user of this
+        else
+        {
+            CharSequence toastText = "There is no maps app available to open. Install a suitable maps app to continue..";
+            int duration = Toast.LENGTH_LONG;
+            Toast toast = Toast.makeText(mContext, toastText, duration);
+            toast.show();
+        }
     }
 
     @Override
@@ -62,11 +121,29 @@ public class ForecastFragment extends Fragment {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_refresh) {
-            FetchWeatherTask f = new FetchWeatherTask();
-            f.execute("63101");
+        if (id == R.id.action_refresh)
+        {
+            //updates the forecast upon selection of the menu item
+            updateForecast();
             return true;
         }
+
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.action_settings)
+        {
+            //launches the SettingsActivity upon selection of the menu item
+            Context sContext = getActivity();
+            Intent settingsMenu = new Intent(sContext, SettingsActivity.class);
+            sContext.startActivity(settingsMenu);
+            return true;
+        }
+
+        if (id == R.id.action_showMap)
+        {
+            showMap(getZip());
+            return true;
+        }
+
         return super.onOptionsItemSelected(item);
     }
 
@@ -75,21 +152,18 @@ public class ForecastFragment extends Fragment {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
-
-
-        FetchWeatherTask f = new FetchWeatherTask();
-        f.execute("63101");
-
+        //dummy ArrayList updated to show the user something if there is time enough for any lapse while rendering/receiving weather data
         final List<String> forecastList = new ArrayList<>(Arrays.asList("gathering data...", "gathering data...", "gathering data...", "gathering data...", "gathering data...", "gathering data...", "gathering data..."));
         mForecastAdapter = new ArrayAdapter<>(getActivity(), R.layout.list_item_forecast, R.id.list_item_forecast_textview, forecastList);
 
+        //open the item contents in it's own DetailActivity
         ListView listView = (ListView) rootView.findViewById(R.id.listview_forecast);
         listView.setAdapter(mForecastAdapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Context thisContext = getActivity().getApplicationContext();
-                CharSequence text = "Item " + (position + 1) + ": " + forecastList.get(position);
+                CharSequence text = "Day " + (position + 1) + "/" + numDays + ": " + forecastList.get(position);
                 Intent detailIntent = new Intent(thisContext, DetailActivity.class);
                 detailIntent.putExtra("text", text);
                 startActivity(detailIntent);
@@ -99,9 +173,14 @@ public class ForecastFragment extends Fragment {
         return rootView;
     }
 
-    public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
+    @Override
+    public void onStart()
+    {
+        super.onStart();
+        updateForecast();
+    }
 
-        int numDays = 7;
+    public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
 
         private final String LOG_TAG = FetchWeatherTask.class.getSimpleName();
 
@@ -226,7 +305,7 @@ public class ForecastFragment extends Fragment {
                 uri.appendPath("daily");
                 uri.appendQueryParameter("zip", postcode[0]);
                 uri.appendQueryParameter("mode", "json");
-                uri.appendQueryParameter("units", "imperial");
+                uri.appendQueryParameter("units", getUnits());
                 uri.appendQueryParameter("cnt", "7");
 
                 //modified app/build.gradle to globally distribute the api key for openweathermap and contained it here for the network call
@@ -298,7 +377,7 @@ public class ForecastFragment extends Fragment {
                 Log.e(LOG_TAG, e.getMessage(), e);
                 e.printStackTrace();
             }
-            // Null will only happen if there was an error getting or parsing the forecast.
+            // null will only happen if there was an error getting or parsing the forecast.
             return null;
         }
 
