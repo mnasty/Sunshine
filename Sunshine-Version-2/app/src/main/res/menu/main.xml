@@ -11,4 +11,5 @@
         droid:title="@string/action_showMap_title"
         droid:orderInCategory="100"
         app:showAsAction="never" />
+
 </menu>

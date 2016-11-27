@@ -23,5 +23,7 @@
     <string name="pref_temp_key">units</string>
     <string name="pref_temp_default">metric</string>
 
+    <string name="title_share_button">Share..</string>
+
 
 </resources>
