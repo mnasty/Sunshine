@@ -242,7 +242,9 @@ public class ForecastFragment extends Fragment {
             dayTime = new Time();
 
             String[] resultStrs = new String[numDays];
-            for(int i = 0; i < weatherArray.length(); i++) {
+
+            for(int i = 0; i < weatherArray.length(); i++)
+            {
                 // For now, using the format "Day, description, hi/low"
                 String day;
                 String description;
@@ -308,11 +310,10 @@ public class ForecastFragment extends Fragment {
                 uri.appendQueryParameter("units", getUnits());
                 uri.appendQueryParameter("cnt", "7");
 
-                //modified app/build.gradle to globally distribute the api key for openweathermap and contained it here for the network call
+                //modified app/build.gradle to globally distribute the api key for OpenWeatherMap and contained it here for the network call
                 uri.appendQueryParameter("APPID", BuildConfig.OPEN_WEATHER_MAP_API_KEY);
 
                 //Possible parameters @ http://openweathermap.org/API#forecast
-                //String baseUrl = "http://api.openweathermap.org/data/2.5/forecast/daily?q=94043&mode=json&units=metric&cnt=7";
                 String baseUrl = uri.build().toString();
 
                 //String apiKey = "&APPID=" + BuildConfig.OPEN_WEATHER_MAP_API_KEY;

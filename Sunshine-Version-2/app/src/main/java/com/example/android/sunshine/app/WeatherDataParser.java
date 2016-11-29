@@ -4,7 +4,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-
 public class WeatherDataParser {
 
     public static double getMaxTemperatureForDay(String weatherString, int dayIndex) throws JSONException {

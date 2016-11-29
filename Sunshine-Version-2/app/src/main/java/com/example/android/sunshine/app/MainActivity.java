@@ -3,6 +3,7 @@ package com.example.android.sunshine.app;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -22,6 +23,7 @@ public class MainActivity extends ActionBarActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.v("OnCreate!!!!", "Created");
         setContentView(R.layout.activity_main);
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
@@ -67,9 +69,23 @@ public class MainActivity extends ActionBarActivity {
     }
 
     @Override
+    public void onPause()
+    {
+        super.onPause();
+        Log.v("onPause!!!!", "Paused");
+    }
+
+    @Override
+    public void onResume()
+    {
+        super.onResume();
+        Log.v("onResume!!!!", "Resumed");
+    }
+
+    @Override
     public void onStart() {
         super.onStart();
-
+        Log.v("onStart!!!!", "Started");
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
         client.connect();
@@ -79,11 +95,18 @@ public class MainActivity extends ActionBarActivity {
     @Override
     public void onStop() {
         super.onStop();
-
+        Log.v("onStop!!!!", "Stopped");
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
         AppIndex.AppIndexApi.end(client, getIndexApiAction());
         client.disconnect();
+    }
+
+    @Override
+    public void onDestroy()
+    {
+        super.onDestroy();
+        Log.v("onDestroy!!!!", "Destroyed");
     }
 
 }

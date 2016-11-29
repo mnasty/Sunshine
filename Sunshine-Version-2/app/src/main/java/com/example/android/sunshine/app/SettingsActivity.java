@@ -6,14 +6,6 @@ import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 
-/**
- * A {@link PreferenceActivity} that presents a set of application settings.
- * <p>
- * See <a href="http://developer.android.com/design/patterns/settings.html">
- * Android Design: Settings</a> for design guidelines and the <a
- * href="http://developer.android.com/guide/topics/ui/settings.html">Settings
- * API Guide</a> for more information on developing a Settings UI.
- */
 @SuppressWarnings("all")
 public class SettingsActivity extends PreferenceActivity
         implements Preference.OnPreferenceChangeListener {

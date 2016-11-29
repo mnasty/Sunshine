@@ -21,7 +21,7 @@ public class DetailActivity extends ActionBarActivity {
 
     protected static String shareString;
 
-    //helper method depricated
+    //helper method deprecated
     /*
     protected String getForecastItemString()
     {
@@ -74,7 +74,6 @@ public class DetailActivity extends ActionBarActivity {
                 else
                 {
                     //gracefully display toast informing user they live under a rock
-                    //their device might be seriously whack if they have no copy to clipboard function but its good measure anyway..
                     CharSequence toastText = "There is no app available to share with. Install a suitable app to continue..";
                     int duration = Toast.LENGTH_LONG;
                     Toast toast = Toast.makeText(getBaseContext(), toastText, duration);
@@ -96,7 +95,6 @@ public class DetailActivity extends ActionBarActivity {
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings)
         {
-            //Context sContext = getActivity();
             Intent settingsMenu = new Intent(this, SettingsActivity.class);
             this.startActivity(settingsMenu);
             return true;
