@@ -33,11 +33,7 @@ public class WeatherContract {
         return time.setJulianDay(julianDay);
     }
 
-    /*
-        Inner class that defines the table contents of the location table
-        Students: This is where you will add the strings.  (Similar to what has been
-        done for WeatherEntry)
-     */
+    /* Inner class that defines the table contents of the location table */
     public static final class LocationEntry implements BaseColumns {
 
         public static final String TABLE_NAME = "location";

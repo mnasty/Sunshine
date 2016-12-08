@@ -24,8 +24,10 @@ import android.util.Log;
 import java.util.HashSet;
 
 import static com.example.android.sunshine.app.data.TestUtilities.createNorthPoleLocationValues;
+import static com.example.android.sunshine.app.data.TestUtilities.createWeatherValues;
 import static com.example.android.sunshine.app.data.TestUtilities.validateCurrentRecord;
 
+@SuppressWarnings("all")
 public class TestDb extends AndroidTestCase {
 
     public static final String LOG_TAG = TestDb.class.getSimpleName();
@@ -43,27 +45,57 @@ public class TestDb extends AndroidTestCase {
         deleteTheDatabase();
     }
 
-    public int[] getColumnIndexes(Cursor c)
+    public long locationTableTest()
     {
-        int[] indexValues = new int[4];
+        // First step: Get reference to writable database
+        SQLiteDatabase db = new WeatherDbHelper(this.mContext).getWritableDatabase();
+        // Create ContentValues of what you want to insert
+        // (you can use the createNorthPoleLocationValues if you wish)
+        ContentValues testValues = createNorthPoleLocationValues();
+        // Insert ContentValues into database and get a row ID back
+        long rowId = db.insert(WeatherContract.LocationEntry.TABLE_NAME, null, testValues);
+        assertTrue("The row of data in the location table was not created properly. Revisit db.insert.", rowId != - 1);
+        // Query the database and receive a Cursor back
+        Cursor c = db.query(WeatherContract.LocationEntry.TABLE_NAME, null, null, null, null, null, null);
 
-        indexValues[0] = c.getColumnIndex(WeatherContract.WeatherEntry.COLUMN_DATE);
-        indexValues[1] = c.getColumnIndex(WeatherContract.WeatherEntry.COLUMN_SHORT_DESC);
-        indexValues[2] = c.getColumnIndex(WeatherContract.WeatherEntry.COLUMN_MAX_TEMP);
-        indexValues[3] = c.getColumnIndex(WeatherContract.WeatherEntry.COLUMN_MIN_TEMP);
+        // Move the cursor to a valid database row
+        if (c.moveToFirst() == false)
+        {
+            fail("There is no data in the Location Table?!!");
+        }
+        else
+        {
+            String cityName = c.getString(c.getColumnIndex(WeatherContract.LocationEntry.COLUMN_CITY_NAME));
+            String coordLat = c.getString(c.getColumnIndex(WeatherContract.LocationEntry.COLUMN_COORD_LAT));
+            String coordLong = c.getString(c.getColumnIndex(WeatherContract.LocationEntry.COLUMN_COORD_LONG));
+            String locationSetting = c.getString(c.getColumnIndex(WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING));
 
-        return indexValues;
+            Log.v("!!!!!!cityName", cityName);
+            Log.v("!!!!!!coordLat", coordLat);
+            Log.v("!!!!!!coordLong", coordLong);
+            Log.v("!!!!!!locationSetting", locationSetting);
+
+            assertEquals("Error in data transfer @ locationSetting!", "99705", locationSetting);
+            assertEquals("Error in data transfer @ cityName", "North Pole", cityName);
+            assertEquals("Error in data transfer @ coordLat", "64.7488", coordLat.toString());
+            assertEquals("Error in data transfer @ coordLong", "-147.353", coordLong.toString());
+        }
+
+
+        // Validate data in resulting Cursor with the original ContentValues
+        validateCurrentRecord("It appears data in table does not match the data inputted", c, testValues);
+
+        assertFalse("There are multiple entries in the db!", c.moveToNext());
+        // (you can use the validateCurrentRecord function in TestUtilities to validate the
+        // query if you like)
+
+        // Finally, close the cursor and database
+        c.close();
+        db.close();
+
+        return rowId;
     }
 
-    /*
-        Students: Uncomment this test once you've written the code to create the Location
-        table.  Note that you will have to have chosen the same column names that I did in
-        my solution for this test to compile, so if you haven't yet done that, this is
-        a good time to change your column names to match mine.
-
-        Note that this only tests that the Location table has the correct columns, since we
-        give you the code for the weather table.  This test does not look at the
-     */
     public void testCreateDb() throws Throwable {
         // build a HashSet of all of the table names we wish to look for
         // Note that there will be another table in the DB that stores the
@@ -122,100 +154,42 @@ public class TestDb extends AndroidTestCase {
         db.close();
     }
 
-    /*
-        Students:  Here is where you will build code to test that we can insert and query the
-        location database.  We've done a lot of work for you.  You'll want to look in TestUtilities
-        where you can uncomment out the "createNorthPoleLocationValues" function.  You can
-        also make use of the ValidateCurrentRecord function from within TestUtilities.
-    */
+
     public void testLocationTable() {
-        // First step: Get reference to writable database
-        SQLiteDatabase db = new WeatherDbHelper(this.mContext).getWritableDatabase();
-        // Create ContentValues of what you want to insert
-        // (you can use the createNorthPoleLocationValues if you wish)
-        ContentValues testValues = createNorthPoleLocationValues();
-        // Insert ContentValues into database and get a row ID back
-        long failcase = db.insert(WeatherContract.LocationEntry.TABLE_NAME, null, testValues);
-        assertTrue(failcase != - 1);
-        // Query the database and receive a Cursor back
-        Cursor c = db.query(WeatherContract.LocationEntry.TABLE_NAME, null, null, null, null, null, null);
 
-        // Move the cursor to a valid database row
-        if (c.moveToFirst() == false)
-        {
-            fail("There is no data in the Location Table?!!");
-        }
-        else
-        {
-            String cityName = c.getString(c.getColumnIndex(WeatherContract.LocationEntry.COLUMN_CITY_NAME));
-            String coordLat = c.getString(c.getColumnIndex(WeatherContract.LocationEntry.COLUMN_COORD_LAT));
-            String coordLong = c.getString(c.getColumnIndex(WeatherContract.LocationEntry.COLUMN_COORD_LONG));
-            String locationSetting = c.getString(c.getColumnIndex(WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING));
-
-            Log.v("!!!!!!cityName", cityName);
-            Log.v("!!!!!!coordLat", coordLat);
-            Log.v("!!!!!!coordLong", coordLong);
-            Log.v("!!!!!!locationSetting", locationSetting);
-
-            assertEquals("Error in data transfer @ locationSetting!", "99705", locationSetting);
-            assertEquals("Error in data transfer @ cityName", "North Pole", cityName);
-            assertEquals("Error in data transfer @ coordLat", "64.7488", coordLat.toString());
-            assertEquals("Error in data transfer @ coordLong", "-147.353", coordLong.toString());
-        }
-
-
-        // Validate data in resulting Cursor with the original ContentValues
-        validateCurrentRecord("issue!", c, testValues);
-
-        assertFalse("There are multiple entries in the db!", c.moveToNext());
-        // (you can use the validateCurrentRecord function in TestUtilities to validate the
-        // query if you like)
-
-        // Finally, close the cursor and database
-        c.close();
-        db.close();
+        locationTableTest();
     }
 
-    /*
-        Students:  Here is where you will build code to test that we can insert and query the
-        database.  We've done a lot of work for you.  You'll want to look in TestUtilities
-        where you can use the "createWeatherValues" function.  You can
-        also make use of the validateCurrentRecord function from within TestUtilities.
-     */
+
     public void testWeatherTable() {
         // First insert the location, and then use the locationRowId to insert
         // the weather. Make sure to cover as many failure cases as you can.
-
-        // Instead of rewriting all of the code we've already written in testLocationTable
-        // we can move this code to insertLocation and then call insertLocation from both
-        // tests. Why move it? We need the code to return the ID of the inserted location
-        // and our testLocationTable can only return void because it's a test.
+        long locRowId = locationTableTest();
 
         // First step: Get reference to writable database
-
+        SQLiteDatabase db = new WeatherDbHelper(this.mContext).getWritableDatabase();
         // Create ContentValues of what you want to insert
         // (you can use the createWeatherValues TestUtilities function if you wish)
-
+        ContentValues wthrValues = createWeatherValues(locRowId);
         // Insert ContentValues into database and get a row ID back
-
+        long wthrRowId = db.insert(WeatherContract.WeatherEntry.TABLE_NAME, null, wthrValues);
         // Query the database and receive a Cursor back
-
+        Cursor c = db.query(WeatherContract.WeatherEntry.TABLE_NAME, null, null, null, null, null, null);
         // Move the cursor to a valid database row
-
+        if (c.moveToFirst() == false)
+        {
+            fail("There is no data in the Weather Table!?");
+        }
+        else
+        {
+            validateCurrentRecord("It appears data in table does not match the data inputted", c, wthrValues);
+        }
         // Validate data in resulting Cursor with the original ContentValues
         // (you can use the validateCurrentRecord function in TestUtilities to validate the
         // query if you like)
 
         // Finally, close the cursor and database
-    }
-
-
-    /*
-        Students: This is a helper method for the testWeatherTable quiz. You can move your
-        code from testLocationTable to here so that you can call this code from both
-        testWeatherTable and testLocationTable.
-     */
-    public long insertLocation() {
-        return -1L;
+        db.close();
+        c.close();
     }
 }

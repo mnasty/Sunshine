@@ -84,11 +84,6 @@ public class WeatherDbHelper extends SQLiteOpenHelper {
                 WeatherContract.LocationEntry.COLUMN_COORD_LAT + " REAL NOT NULL, " +
                 WeatherContract.LocationEntry.COLUMN_COORD_LONG + " REAL NOT NULL," +
 
-
-                // Set up the location column as a foreign key to location table.
-                //" FOREIGN KEY (" + WeatherContract.WeatherEntry.COLUMN_LOC_KEY + ") REFERENCES " +
-                //WeatherContract.LocationEntry.TABLE_NAME + " (" + WeatherContract.LocationEntry._ID + "), " +
-
                 // To assure the application have just one weather entry per day
                 // per location, it's created a UNIQUE constraint with REPLACE strategy
                 " UNIQUE (" + WeatherContract.LocationEntry.COLUMN_COORD_LAT + ", " +
