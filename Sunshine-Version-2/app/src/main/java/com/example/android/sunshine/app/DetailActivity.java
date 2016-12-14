@@ -21,16 +21,6 @@ public class DetailActivity extends ActionBarActivity {
 
     protected static String shareString;
 
-    //helper method deprecated
-    /*
-    protected String getForecastItemString()
-    {
-        Intent detailIntentReceiver = this.getIntent();
-        CharSequence text = detailIntentReceiver.getCharSequenceExtra("text");
-        return text.toString();
-    }
-    */
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
