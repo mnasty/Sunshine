@@ -20,6 +20,7 @@ import android.content.ContentProvider;
 import android.content.ContentValues;
 import android.content.UriMatcher;
 import android.database.Cursor;
+import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
@@ -196,9 +197,6 @@ public class WeatherProvider extends ContentProvider {
         return retCursor;
     }
 
-    /*
-        Student: Add the ability to insert Locations to the implementation of this function.
-     */
     @Override
     public Uri insert(Uri uri, ContentValues values) {
         final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
@@ -215,6 +213,15 @@ public class WeatherProvider extends ContentProvider {
                     throw new android.database.SQLException("Failed to insert row into " + uri);
                 break;
             }
+            case LOCATION: {
+                normalizeDate(values);
+                long _id = db.insert(WeatherContract.LocationEntry.TABLE_NAME, null, values);
+                if ( _id > 0 )
+                    returnUri = WeatherContract.LocationEntry.buildLocationUri(_id);
+                else
+                    throw new android.database.SQLException("Failed to insert row into " + uri);
+                break;
+            }
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
@@ -224,18 +231,44 @@ public class WeatherProvider extends ContentProvider {
 
     @Override
     public int delete(Uri uri, String selection, String[] selectionArgs) {
-        // Student: Start by getting a writable database
-
-        // Student: Use the uriMatcher to match the WEATHER and LOCATION URI's we are going to
-        // handle.  If it doesn't match these, throw an UnsupportedOperationException.
-
-        // Student: A null value deletes all rows.  In my implementation of this, I only notified
-        // the uri listeners (using the content resolver) if the rowsDeleted != 0 or the selection
-        // is null.
-        // Oh, and you should notify the listeners here.
-
-        // Student: return the actual rows deleted
-        return 0;
+        //Start by getting a writable database
+        final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
+        final int match = sUriMatcher.match(uri);
+        int delRows;
+        // Use the uriMatcher to match the WEATHER and LOCATION URI's we are going to
+        // handle.  If it doesn't match these, we throw an UnsupportedOperationException.
+        switch (match)
+        {
+            case WEATHER: {
+                long id = db.delete(WeatherContract.WeatherEntry.TABLE_NAME, selection, selectionArgs);
+                if (id > 0)
+                {
+                    delRows = db.delete(WeatherContract.WeatherEntry.TABLE_NAME, selection, selectionArgs);
+                }
+                else
+                {
+                    throw new android.database.SQLException("Failed to delete @ " + uri);
+                }
+             break;
+            }
+            case LOCATION: {
+                long id = db.delete(WeatherContract.LocationEntry.TABLE_NAME, selection, selectionArgs);
+                if (id > 0)
+                {
+                    delRows = db.delete(WeatherContract.LocationEntry.TABLE_NAME, selection, selectionArgs);
+                }
+                else
+                {
+                    throw new android.database.SQLException("Failed to delete @ " + uri);
+                }
+                break;
+            }
+            default:
+                throw new UnsupportedOperationException("Unknown Uri @ " + uri);
+        }
+        // A null value deletes all rows.
+        getContext().getContentResolver().notifyChange(uri, null);
+        return delRows;
     }
 
     private void normalizeDate(ContentValues values) {
@@ -249,9 +282,42 @@ public class WeatherProvider extends ContentProvider {
     @Override
     public int update(
             Uri uri, ContentValues values, String selection, String[] selectionArgs) {
-        // Student: This is a lot like the delete function.  We return the number of rows impacted
+        final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
+        final int match = sUriMatcher.match(uri);
+        int updRows;
+
+        switch (match) {
+            case WEATHER: {
+                long id = db.update(WeatherContract.WeatherEntry.TABLE_NAME, values, selection, selectionArgs);
+                if (id > 0)
+                {
+                    updRows = db.update(WeatherContract.WeatherEntry.TABLE_NAME, values, selection, selectionArgs);
+                }
+                else
+                {
+                    throw new SQLException("Failed to update @ " + uri);
+                }
+                break;
+            }
+            case LOCATION: {
+                long id = db.update(WeatherContract.LocationEntry.TABLE_NAME, values, selection, selectionArgs);
+                if (id > 0)
+                {
+                    updRows = db.update(WeatherContract.LocationEntry.TABLE_NAME, values, selection, selectionArgs);
+                }
+                else
+                {
+                    throw new SQLException("Failed to update @ " + uri);
+                }
+                break;
+            }
+            default:
+                throw new UnsupportedOperationException("Unknown Uri @ " + uri);
+        }
+        getContext().getContentResolver().notifyChange(uri, null);
+        // This is a lot like the delete function.  We return the number of rows impacted
         // by the update.
-        return 0;
+        return updRows;
     }
 
     @Override
@@ -281,7 +347,7 @@ public class WeatherProvider extends ContentProvider {
         }
     }
 
-    // You do not need to call this method. This is a method specifically to assist the testing
+    // This is a method specifically to assist the testing
     // framework in running smoothly. You can read more at:
     // http://developer.android.com/reference/android/content/ContentProvider.html#shutdown()
     @Override
