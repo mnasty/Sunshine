@@ -7,6 +7,7 @@ package com.example.android.sunshine.app;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -17,10 +18,10 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
+
+import com.example.android.sunshine.app.data.WeatherContract;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,7 +29,7 @@ import java.util.List;
 
 //@SuppressWarnings("all")
 public class ForecastFragment extends Fragment {
-    private ArrayAdapter<String> mForecastAdapter;
+    private ForecastAdapter mForecastAdapter;
 
     //set number of days for the forecast query also kept here temporarily for rendering in DetailActivity
     int numDays = 14;
@@ -41,7 +42,7 @@ public class ForecastFragment extends Fragment {
     //launches the asyncTask to get weather data from server with the zip code currently stored in the settings
     private void updateForecast()
     {
-        FetchWeatherTask f = new FetchWeatherTask(getActivity(), mForecastAdapter);
+        FetchWeatherTask f = new FetchWeatherTask(getActivity());
         f.execute(getZip());
     }
 
@@ -138,23 +139,37 @@ public class ForecastFragment extends Fragment {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
+        String locationSetting = Utility.getPreferredLocation(getActivity());
+
+        // Sort order:  Ascending, by date.
+        String sortOrder = WeatherContract.WeatherEntry.COLUMN_DATE + " ASC";
+        Uri weatherForLocationUri = WeatherContract.WeatherEntry.buildWeatherLocationWithStartDate(
+                locationSetting, System.currentTimeMillis());
+
+        Cursor cur = getActivity().getContentResolver().query(weatherForLocationUri,
+                null, null, null, sortOrder);
+
+
         //dummy ArrayList updated to show the user something if there is time enough for any lapse while rendering/receiving weather data
         final List<String> forecastList = new ArrayList<>(Arrays.asList("gathering data...", "gathering data...", "gathering data...", "gathering data...", "gathering data...", "gathering data...", "gathering data..."));
-        mForecastAdapter = new ArrayAdapter<>(getActivity(), R.layout.list_item_forecast, R.id.list_item_forecast_textview, forecastList);
+
+        mForecastAdapter = new ForecastAdapter(getContext(), cur, 0);
+
+                //ArrayAdapter<>(getActivity(), R.layout.list_item_forecast, R.id.list_item_forecast_textview, forecastList);
 
         //open the item contents in it's own DetailActivity
         ListView listView = (ListView) rootView.findViewById(R.id.listview_forecast);
         listView.setAdapter(mForecastAdapter);
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Context thisContext = getActivity().getApplicationContext();
-                CharSequence text = "Day " + (position + 1) + "/" + numDays + ": " + forecastList.get(position);
-                Intent detailIntent = new Intent(thisContext, DetailActivity.class);
-                detailIntent.putExtra("text", text);
-                startActivity(detailIntent);
-            }
-        });
+//        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+//            @Override
+//            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+//                Context thisContext = getActivity().getApplicationContext();
+//                CharSequence text = "Day " + (position + 1) + "/" + numDays + ": " + forecastList.get(position);
+//                Intent detailIntent = new Intent(thisContext, DetailActivity.class);
+//                detailIntent.putExtra("text", text);
+//                startActivity(detailIntent);
+//            }
+//        });
 
         return rootView;
     }

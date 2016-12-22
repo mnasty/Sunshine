@@ -25,6 +25,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 
+@SuppressWarnings("all")
 public class WeatherProvider extends ContentProvider {
 
     // The URI Matcher used by this content provider.
@@ -38,7 +39,8 @@ public class WeatherProvider extends ContentProvider {
 
     private static final SQLiteQueryBuilder sWeatherByLocationSettingQueryBuilder;
 
-    static{
+    static
+    {
         sWeatherByLocationSettingQueryBuilder = new SQLiteQueryBuilder();
 
         //weather INNER JOIN location ON weather.location_id = location._id
@@ -75,10 +77,12 @@ public class WeatherProvider extends ContentProvider {
         String[] selectionArgs;
         String selection;
 
-        if (startDate == 0) {
+        if (startDate == 0)
+        {
             selection = sLocationSettingSelection;
             selectionArgs = new String[]{locationSetting};
-        } else {
+        } else
+        {
             selectionArgs = new String[]{locationSetting, Long.toString(startDate)};
             selection = sLocationSettingWithStartDateSelection;
         }
@@ -273,7 +277,8 @@ public class WeatherProvider extends ContentProvider {
 
     private void normalizeDate(ContentValues values) {
         // normalize the date value
-        if (values.containsKey(WeatherContract.WeatherEntry.COLUMN_DATE)) {
+        if (values.containsKey(WeatherContract.WeatherEntry.COLUMN_DATE))
+        {
             long dateValue = values.getAsLong(WeatherContract.WeatherEntry.COLUMN_DATE);
             values.put(WeatherContract.WeatherEntry.COLUMN_DATE, WeatherContract.normalizeDate(dateValue));
         }
@@ -324,20 +329,25 @@ public class WeatherProvider extends ContentProvider {
     public int bulkInsert(Uri uri, ContentValues[] values) {
         final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
         final int match = sUriMatcher.match(uri);
-        switch (match) {
+
+        switch (match)
+        {
             case WEATHER:
                 db.beginTransaction();
                 int returnCount = 0;
                 try {
-                    for (ContentValues value : values) {
+                    for (ContentValues value : values)
+                    {
                         normalizeDate(value);
                         long _id = db.insert(WeatherContract.WeatherEntry.TABLE_NAME, null, value);
-                        if (_id != -1) {
+                        if (_id != -1)
+                        {
                             returnCount++;
                         }
                     }
                     db.setTransactionSuccessful();
-                } finally {
+                } finally
+                {
                     db.endTransaction();
                 }
                 getContext().getContentResolver().notifyChange(uri, null);
