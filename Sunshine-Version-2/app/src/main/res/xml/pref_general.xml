@@ -8,12 +8,12 @@
         droid:title="@string/pref_cat_a_title">
 
         <EditTextPreference
-        droid:title="@string/pref_location_label"
-        droid:key="@string/pref_location_key"
-        droid:defaultValue="@string/pref_location_default"
-        droid:inputType="text"
-        droid:singleLine="true"
-        />
+            droid:title="@string/pref_location_label"
+            droid:key="@string/pref_location_key"
+            droid:defaultValue="@string/pref_location_default"
+            droid:inputType="text"
+            droid:singleLine="true"
+            />
 
     </PreferenceCategory>
 
