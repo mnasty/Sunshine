@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.text.format.Time;
+import android.util.Log;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -159,5 +160,87 @@ public class Utility {
             direction = "NW";
         }
         return String.format(context.getString(windFormat), windSpeed, direction);
+    }
+
+    public static int getArtDrawable(int conditionId)
+    {
+        if (conditionId == 500 || conditionId >= 300 && conditionId <= 321 || conditionId == 906)
+        {
+            return R.drawable.art_light_rain;
+        }
+        else if (conditionId >= 501 && conditionId <= 531)
+        {
+            return R.drawable.art_rain;
+        }
+        else if (conditionId >= 600 && conditionId <= 622 || conditionId == 903)
+        {
+            return R.drawable.art_snow;
+        }
+        else if (conditionId >= 701 && conditionId <= 781 || conditionId == 900 || conditionId == 905 || conditionId >= 957 && conditionId <= 959)
+        {
+            return R.drawable.art_fog;
+        }
+        else if (conditionId == 800 || conditionId == 904 || conditionId >= 951 && conditionId <= 956)
+        {
+            return R.drawable.art_clear;
+        }
+        else if (conditionId == 801)
+        {
+            return R.drawable.art_light_clouds;
+        }
+        else if (conditionId >= 802 && conditionId <= 804)
+        {
+            return R.drawable.art_clouds;
+        }
+        else if (conditionId >= 200 && conditionId <= 232 || conditionId == 901 || conditionId == 902 || conditionId >= 960 && conditionId <= 962)
+        {
+            return R.drawable.art_storm;
+        }
+        else
+        {
+            Log.d("!!!OPENWEATHERMAP_ERROR", "getArtDrawable() Recieved Unknown Weather Status Code: " + String.valueOf(conditionId));
+            return R.drawable.art_light_clouds;
+        }
+    }
+
+    public static int getIcDrawable(int conditionId)
+    {
+        if (conditionId == 500 || conditionId >= 300 && conditionId <= 321 || conditionId == 906)
+        {
+            return R.drawable.ic_light_rain;
+        }
+        else if (conditionId >= 501 && conditionId <= 531)
+        {
+            return R.drawable.ic_rain;
+        }
+        else if (conditionId >= 600 && conditionId <= 622 || conditionId == 903)
+        {
+            return R.drawable.ic_snow;
+        }
+        else if (conditionId >= 701 && conditionId <= 781 || conditionId == 900 || conditionId == 905 || conditionId >= 957 && conditionId <= 959)
+        {
+            return R.drawable.ic_fog;
+        }
+        else if (conditionId == 800 || conditionId == 904 || conditionId >= 951 && conditionId <= 956)
+        {
+            return R.drawable.ic_clear;
+        }
+        else if (conditionId == 801)
+        {
+            return R.drawable.ic_light_clouds;
+        }
+        else if (conditionId >= 802 && conditionId <= 804)
+        {
+            return R.drawable.ic_cloudy;
+        }
+        else if (conditionId >= 200 && conditionId <= 232 || conditionId == 901 || conditionId == 902 || conditionId >= 960 && conditionId <= 962)
+        {
+            return R.drawable.ic_storm;
+        }
+        else
+        {
+            Log.d("!!!OPENWEATHERMAP_ERROR", "getIcDrawable() Recieved Unknown Weather Status Code: " + String.valueOf(conditionId));
+            return R.drawable.ic_light_clouds;
+        }
     }
 }

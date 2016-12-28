@@ -3,11 +3,15 @@ package com.example.android.sunshine.app;
 import android.content.Context;
 import android.database.Cursor;
 import android.support.v4.widget.CursorAdapter;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import static com.example.android.sunshine.app.Utility.getArtDrawable;
+import static com.example.android.sunshine.app.Utility.getIcDrawable;
 
 /**
  * {@link ForecastAdapter} exposes a list of weather forecasts
@@ -50,6 +54,8 @@ public class ForecastAdapter extends CursorAdapter {
                 " - " + cursor.getString(ForecastFragment.COL_WEATHER_DESC) +
                 " - " + highAndLow;
     }
+
+
 
     //implement view holders, reducing unnecessary calls traversing the view hierarchy for layout children id's
     public static class ViewConstants {
@@ -105,8 +111,21 @@ public class ForecastAdapter extends CursorAdapter {
         //implement view holders, reducing unnecessary calls traversing the view hierarchy for layout children id's
         ViewConstants vc = (ViewConstants) view.getTag();
 
-        //*use placeholder img for now
-        vc.iconView.setImageResource(R.drawable.ic_launcher);
+        //retrieve weather status code
+        String logString = String.valueOf(cursor.getInt(ForecastFragment.COL_WEATHER_CONDITION_ID));
+        Log.d("!!!!LOGSTRING", logString);
+
+        int conditionId = cursor.getInt(ForecastFragment.COL_WEATHER_CONDITION_ID);
+
+        //determine how to differentiate by view type to get the correct drawable to display
+        if (getItemViewType(cursor.getPosition()) == VIEW_TYPE_TODAY)
+        {
+            vc.iconView.setImageResource(getArtDrawable(conditionId));
+        }
+        else
+        {
+            vc.iconView.setImageResource(getIcDrawable(conditionId));
+        }
 
         //read date from cursor
         long dateInMillis = cursor.getLong(ForecastFragment.COL_WEATHER_DATE);

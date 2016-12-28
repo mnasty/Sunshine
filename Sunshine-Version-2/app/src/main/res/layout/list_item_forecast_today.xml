@@ -10,29 +10,33 @@
        android:layout_width="match_parent"
        android:layout_height="wrap_content"
        android:orientation="vertical"
-       android:padding="16dp"
        android:layout_weight="1">
 
    <TextView
        android:layout_width="wrap_content"
        android:layout_height="wrap_content"
        android:layout_gravity="center"
-       android:id="@+id/list_item_date_textview" />
+       android:paddingTop="16dp"
+       android:id="@+id/list_item_date_textview"
+       android:text="Tomorrow, February 92th"/>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:paddingTop="16dp"
-        android:paddingBottom="8dp"
-        android:id="@+id/list_item_high_textview"/>
+        android:padding="32dp"
+        android:id="@+id/list_item_high_textview"
+        android:textSize="32sp"
+        android:text="21"/>
 
    <TextView
        android:layout_width="wrap_content"
        android:layout_height="wrap_content"
        android:layout_gravity="center"
        android:padding="8dp"
-       android:id="@+id/list_item_low_textview"/>
+       android:textSize="16sp"
+       android:id="@+id/list_item_low_textview"
+       android:text="19"/>
 
    </LinearLayout>
 
@@ -40,23 +44,22 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="16dp"
+        android:paddingBottom="16dp"
         android:layout_weight="1">
 
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:padding="8dp"
             android:id="@+id/list_item_icon"
-            android:src="@drawable/ic_launcher"/>
+            android:src="@drawable/art_rain"/>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:padding="8dp"
-            android:id="@+id/list_item_forecast_textview"/>
+            android:id="@+id/list_item_forecast_textview"
+            android:text="Snow, Bitch!"/>
 
     </LinearLayout>
 

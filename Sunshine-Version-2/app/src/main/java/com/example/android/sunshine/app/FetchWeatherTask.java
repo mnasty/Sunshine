@@ -198,6 +198,7 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
                         dayForecast.getJSONArray(OWM_WEATHER).getJSONObject(0);
                 description = weatherObject.getString(OWM_DESCRIPTION);
                 weatherId = weatherObject.getInt(OWM_WEATHER_ID);
+                Log.v("weatherId!!!!!", "FetchWeatherTask.weatherId value was: " + String.valueOf(weatherId));
 
                 // Temperatures are in a child object called "temp".  Try not to name variables
                 // "temp" when working with temperature.  It confuses everybody.

@@ -18,6 +18,9 @@ import android.view.ViewGroup;
 
 import com.example.android.sunshine.app.data.WeatherContract;
 
+import static com.example.android.sunshine.app.Utility.getArtDrawable;
+import static com.example.android.sunshine.app.Utility.getIcDrawable;
+
 /**
  * A placeholder fragment containing a simple view.
  */
@@ -26,6 +29,8 @@ public class DetailFragment extends android.support.v4.app.Fragment implements L
     private static final String LOG_TAG = DetailFragment.class.getSimpleName();
 
     private static final String FORECAST_SHARE_HASHTAG = " #SunshineApp";
+    private final int VIEW_TYPE_TODAY = 0;
+    private final int VIEW_TYPE_FUTURE_DAY = 1;
 
     private ShareActionProvider mShareActionProvider;
     private String mForecast;
@@ -119,6 +124,11 @@ public class DetailFragment extends android.support.v4.app.Fragment implements L
         );
     }
 
+    //ported from forecast adapter, single line ternary statement is just easier to repeat here
+    public int getItemViewType(int position) {
+        return (position == 0) ? VIEW_TYPE_TODAY : VIEW_TYPE_FUTURE_DAY;
+    }
+
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         Log.v(LOG_TAG, "In onLoadFinished");
@@ -126,18 +136,30 @@ public class DetailFragment extends android.support.v4.app.Fragment implements L
 
         ForecastAdapter.ViewConstants vc = new ForecastAdapter.ViewConstants(view);
 
-        vc.iconView.setImageResource(R.drawable.ic_launcher);
+        //retrieve weather status code
+        //bug: is returning -1 as the column index when ForecastFragment.COL_WEATHER_CONDITION_ID & when WeatherContract.WeatherEntry.COLUMN_WEATHER_ID . No Explanation
+        int conditionId = data.getInt(data.getColumnIndex(String.valueOf(ForecastFragment.COL_WEATHER_CONDITION_ID)));
 
-        int humidity = data.getInt(COL_HUMIDITY);
-        vc.humidityView.setText(humidity + "%");
+        //determine how to differentiate by view type to get the correct drawable to display
+        if (getItemViewType(data.getPosition()) == VIEW_TYPE_TODAY)
+        {
+            vc.iconView.setImageResource(getArtDrawable(conditionId));
+        }
+        else
+        {
+            vc.iconView.setImageResource(getIcDrawable(conditionId));
+        }
+
+        double humidity = data.getDouble(COL_HUMIDITY);
+        vc.humidityView.setText(getContext().getString(R.string.format_humidity, humidity));
 
         float windSpeed = data.getFloat(COL_WIND_SPEED);
         float windDir = data.getFloat(COL_WIND_DIR);
 
         vc.windView.setText(Utility.getFormattedWind(getContext(), windSpeed, windDir));
 
-        String pressure = String.valueOf(data.getDouble(COL_PRESSURE));
-        vc.pressureView.setText(pressure);
+        double pressure = data.getDouble(COL_PRESSURE);
+        vc.pressureView.setText(getContext().getString(R.string.format_pressure, pressure));
 
         long date = data.getLong(COL_WEATHER_DATE);
         vc.dateView.setText(Utility.getFriendlyDayString(getContext(), date));
