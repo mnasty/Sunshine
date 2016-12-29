@@ -11,7 +11,11 @@
             android:id="@+id/list_item_date_textview"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:padding="24dp" />
+            android:paddingLeft="24dp"
+            android:paddingRight="24dp"
+            android:paddingBottom="8dp"
+            android:paddingTop="24dp"
+            android:textSize="24sp"/>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -29,7 +33,10 @@
                     android:id="@+id/list_item_high_textview"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:padding="24dp"
+                    android:paddingLeft="24dp"
+                    android:paddingRight="24dp"
+                    android:paddingTop="38dp"
+                    android:paddingBottom="24dp"
                     android:textSize="48sp" />
 
                 <TextView
@@ -37,7 +44,10 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textSize="34sp"
-                    android:padding="28dp" />
+                    android:paddingLeft="28dp"
+                    android:paddingRight="28dp"
+                    android:paddingBottom="28dp"
+                    android:paddingTop="28dp" />
             </LinearLayout>
 
             <LinearLayout
@@ -51,17 +61,16 @@
                     android:id="@+id/list_item_icon"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:paddingTop="32dp"
-                    android:paddingBottom="32dp"
-                    android:paddingLeft="52dp"
+                    android:padding="0dp"
+                    android:layout_gravity="center"
                     android:src="@mipmap/ic_launcher" />
 
                 <TextView
                     android:id="@+id/list_item_forecast_textview"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:paddingTop="16dp"
-                    android:paddingLeft="60dp" />
+                    android:layout_gravity="center"
+                    android:paddingTop="16dp" />
             </LinearLayout>
         </LinearLayout>
 

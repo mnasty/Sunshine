@@ -47,7 +47,8 @@ public class DetailFragment extends android.support.v4.app.Fragment implements L
             WeatherContract.WeatherEntry.COLUMN_HUMIDITY,
             WeatherContract.WeatherEntry.COLUMN_WIND_SPEED,
             WeatherContract.WeatherEntry.COLUMN_PRESSURE,
-            WeatherContract.WeatherEntry.COLUMN_DEGREES
+            WeatherContract.WeatherEntry.COLUMN_DEGREES,
+            WeatherContract.WeatherEntry.COLUMN_WEATHER_ID
     };
 
     // These constants correspond to the projection defined above, and must change if the
@@ -61,6 +62,7 @@ public class DetailFragment extends android.support.v4.app.Fragment implements L
     private static final int COL_WIND_SPEED = 6;
     private static final int COL_PRESSURE = 7;
     private static final int COL_WIND_DIR = 8;
+    private static final int COL_WEATHER_COND_ID = 9;
 
     public DetailFragment() {
         setHasOptionsMenu(true);
@@ -136,9 +138,8 @@ public class DetailFragment extends android.support.v4.app.Fragment implements L
 
         ForecastAdapter.ViewConstants vc = new ForecastAdapter.ViewConstants(view);
 
-        //retrieve weather status code
-        //bug: is returning -1 as the column index when ForecastFragment.COL_WEATHER_CONDITION_ID & when WeatherContract.WeatherEntry.COLUMN_WEATHER_ID . No Explanation
-        int conditionId = data.getInt(data.getColumnIndex(String.valueOf(ForecastFragment.COL_WEATHER_CONDITION_ID)));
+        //retrieve weather status code, as read thru data cursor static columns
+        int conditionId = data.getInt(COL_WEATHER_COND_ID);
 
         //determine how to differentiate by view type to get the correct drawable to display
         if (getItemViewType(data.getPosition()) == VIEW_TYPE_TODAY)

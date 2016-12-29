@@ -17,8 +17,7 @@
        android:layout_height="wrap_content"
        android:layout_gravity="center"
        android:paddingTop="16dp"
-       android:id="@+id/list_item_date_textview"
-       android:text="Tomorrow, February 92th"/>
+       android:id="@+id/list_item_date_textview" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -26,17 +25,15 @@
         android:layout_gravity="center"
         android:padding="32dp"
         android:id="@+id/list_item_high_textview"
-        android:textSize="32sp"
-        android:text="21"/>
+        android:textSize="32sp" />
 
    <TextView
        android:layout_width="wrap_content"
        android:layout_height="wrap_content"
        android:layout_gravity="center"
-       android:padding="8dp"
-       android:textSize="16sp"
-       android:id="@+id/list_item_low_textview"
-       android:text="19"/>
+       android:paddingRight="6dp"
+       android:textSize="19sp"
+       android:id="@+id/list_item_low_textview" />
 
    </LinearLayout>
 
@@ -58,8 +55,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:id="@+id/list_item_forecast_textview"
-            android:text="Snow, Bitch!"/>
+            android:id="@+id/list_item_forecast_textview" />
 
     </LinearLayout>
 

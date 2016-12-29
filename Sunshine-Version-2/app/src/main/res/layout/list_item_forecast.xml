@@ -23,14 +23,12 @@
         <TextView
             android:id="@+id/list_item_date_textview"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Tomorrow, February 92th"/>
+            android:layout_height="wrap_content" />
 
         <TextView
             android:id="@+id/list_item_forecast_textview"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Snow, Bitch!"/>
+            android:layout_height="wrap_content" />
 
     </LinearLayout>
 
@@ -42,14 +40,12 @@
         <TextView
             android:id="@+id/list_item_high_textview"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="21"/>
+            android:layout_height="wrap_content" />
 
         <TextView
             android:id="@+id/list_item_low_textview"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="19"/>
+            android:layout_height="wrap_content" />
     </LinearLayout>
 
 </LinearLayout>

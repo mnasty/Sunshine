@@ -3,7 +3,6 @@ package com.example.android.sunshine.app;
 import android.content.Context;
 import android.database.Cursor;
 import android.support.v4.widget.CursorAdapter;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -112,9 +111,6 @@ public class ForecastAdapter extends CursorAdapter {
         ViewConstants vc = (ViewConstants) view.getTag();
 
         //retrieve weather status code
-        String logString = String.valueOf(cursor.getInt(ForecastFragment.COL_WEATHER_CONDITION_ID));
-        Log.d("!!!!LOGSTRING", logString);
-
         int conditionId = cursor.getInt(ForecastFragment.COL_WEATHER_CONDITION_ID);
 
         //determine how to differentiate by view type to get the correct drawable to display
