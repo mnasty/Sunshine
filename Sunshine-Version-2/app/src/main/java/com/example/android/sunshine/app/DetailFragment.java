@@ -110,7 +110,7 @@ public class DetailFragment extends android.support.v4.app.Fragment implements L
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         Log.v(LOG_TAG, "In onCreateLoader");
         Intent intent = getActivity().getIntent();
-        if (intent == null) {
+        if (intent == null || intent.getData() == null) {
             return null;
         }
 
