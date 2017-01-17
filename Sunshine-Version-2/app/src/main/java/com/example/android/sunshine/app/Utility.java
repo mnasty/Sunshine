@@ -24,7 +24,7 @@ public class Utility {
                 .equals(context.getString(R.string.pref_units_metric));
     }
 
-    static String formatTemperature(Context context, double temperature, boolean isMetric) {
+    public static String formatTemperature(Context context, double temperature, boolean isMetric) {
         double temp;
         if (!isMetric) {
             temp = 9 * temperature / 5 + 32;
@@ -70,6 +70,8 @@ public class Utility {
         if (julianDay == currentJulianDay) {
             String today = context.getString(R.string.today);
             int formatId = R.string.format_full_friendly_date;
+
+            //android studio bug id's this incorrectly as an error - known issue in google's kb
             return String.format(context.getString(
                     formatId,
                     today,

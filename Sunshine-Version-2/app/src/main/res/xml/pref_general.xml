@@ -30,4 +30,16 @@
 
     </PreferenceCategory>
 
+    <PreferenceCategory droid:title="@string/pref_enable_notifications_label">
+
+        <CheckBoxPreference
+            droid:key="@string/pref_enable_notifications_key"
+            droid:summaryOn="@string/pref_enable_notifications_true"
+            droid:summaryOff="@string/pref_enable_notifications_false"
+            droid:defaultValue="@string/pref_enable_notifications_default"
+            droid:disableDependentsState="@string/pref_enable_notifications_false"
+            />
+
+    </PreferenceCategory>
+
 </PreferenceScreen>
