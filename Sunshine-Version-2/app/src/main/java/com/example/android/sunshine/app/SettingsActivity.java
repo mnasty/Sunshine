@@ -20,6 +20,9 @@ import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
+import android.widget.Toast;
+
+import com.example.android.sunshine.app.sync.SunshineSyncAdapter;
 
 /**
  * A {@link PreferenceActivity} that presents a set of application settings.
@@ -35,6 +38,7 @@ public class SettingsActivity extends PreferenceActivity
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         // Add 'general' preferences, defined in the XML file
         addPreferencesFromResource(R.xml.pref_general);
 
@@ -55,15 +59,20 @@ public class SettingsActivity extends PreferenceActivity
 
         // Trigger the listener immediately with the preference's
         // current value.
-        onPreferenceChange(preference,
-                PreferenceManager
-                        .getDefaultSharedPreferences(preference.getContext())
-                        .getString(preference.getKey(), ""));
+        onPreferenceChange(preference, PreferenceManager.getDefaultSharedPreferences(preference.getContext()).getString(preference.getKey(), ""));
     }
 
     @Override
     public boolean onPreferenceChange(Preference preference, Object value) {
         String stringValue = value.toString();
+
+        //validate that the length of the zip code is at least 5 digits
+        if (stringValue.length() < 5)
+        {
+            android.widget.Toast invalidZipLength = android.widget.Toast.makeText(this, "ENTER A VALID 5 DIGIT ZIP CODE!", android.widget.Toast.LENGTH_LONG);
+            invalidZipLength.show();
+            return false;
+        }
 
         if (preference instanceof ListPreference) {
             // For list preferences, look up the correct display value in
@@ -77,6 +86,16 @@ public class SettingsActivity extends PreferenceActivity
             // For other preferences, set the summary to the value's simple string representation.
             preference.setSummary(stringValue);
         }
+
+        //refresh and populate new data
+        SunshineSyncAdapter.syncImmediately(this);
+
+        //grab new data from server hot and validate the country code as US or return false and our toast
+        if (!SunshineSyncAdapter.isUsZip) {
+            Toast invalidUSZipToast = Toast.makeText(this, "THE ZIP CODE PROVIDED IS NOT A VALID US ZIP CODE! YOU ARE VIEWING WEATHER FROM: " + SunshineSyncAdapter.cityNameZipValidation + ", " + SunshineSyncAdapter.countryCodeZipValidation, Toast.LENGTH_LONG);
+            invalidUSZipToast.show();
+        }
+
         return true;
     }
 

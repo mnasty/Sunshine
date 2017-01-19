@@ -48,6 +48,11 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
 
     public final String LOG_TAG = SunshineSyncAdapter.class.getSimpleName();
 
+    //vars for zip validation
+    public static Boolean isUsZip = true;
+    public static String cityNameZipValidation;
+    public static String countryCodeZipValidation;
+
     // Interval at which to sync with the weather, in milliseconds.
     // 60 seconds (1 minute)  180 = 3 hours
     // ~~int SYNC_INTERVAL = x minutes;
@@ -171,7 +176,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
                 }
             }
         }
-        Log.d(LOG_TAG, "!!!SYNC COMPLETE!");
+        Log.d(LOG_TAG, "!!!JSON SYNC COMPLETE!");
         return;
     }
 
@@ -235,6 +240,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
 
         // Location information
         final String OWM_CITY = "city";
+        final String OWM_COUNTRY_CODE = "country";
         final String OWM_CITY_NAME = "name";
         final String OWM_COORD = "coord";
 
@@ -265,6 +271,25 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
 
             JSONObject cityJson = forecastJson.getJSONObject(OWM_CITY);
             String cityName = cityJson.getString(OWM_CITY_NAME);
+
+            //country code for zip validation
+            JSONObject countryCodeObj = forecastJson.getJSONObject(OWM_CITY);
+            String countryCode = countryCodeObj.getString(OWM_COUNTRY_CODE);
+
+            //make sure we have a US zip code or notify user of foreign weather result
+            if ("US".equals(countryCode))
+            {
+                Log.d(LOG_TAG, "Valid US Postal ZIP Code Provided: " + countryCode);
+            }
+            else
+            {
+                //the instances of cityName and countryCode are preserved temporarily in static
+                //vars so they can be accessed in the SettingsActivity to display the necessary toast
+                cityNameZipValidation = cityName;
+                countryCodeZipValidation = countryCode;
+                //Toast informing user is displayed on the UI thread via SettingsActivity:98
+                isUsZip = false;
+            }
 
             JSONObject cityCoord = cityJson.getJSONObject(OWM_COORD);
             double cityLatitude = cityCoord.getDouble(OWM_LATITUDE);
@@ -325,8 +350,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
                 weatherId = weatherObject.getInt(OWM_WEATHER_ID);
                 Log.v("weatherId!!!!!", "SunshineService.weatherId value was: " + String.valueOf(weatherId));
 
-                // Temperatures are in a child object called "temp".  Try not to name variables
-                // "temp" when working with temperature.  It confuses everybody.
+                // Temperatures are in a child object called "temp".
                 JSONObject temperatureObject = dayForecast.getJSONObject(OWM_TEMPERATURE);
                 high = temperatureObject.getDouble(OWM_MAX);
                 low = temperatureObject.getDouble(OWM_MIN);
@@ -358,6 +382,10 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
                 getContext().getContentResolver().delete(WeatherContract.WeatherEntry.CONTENT_URI,
                         WeatherContract.WeatherEntry.COLUMN_DATE + " <= ?",
                         new String[] {Long.toString(dayTime.setJulianDay(julianStartDay-1))});
+
+                //setting the location string for the settings activity to the city name
+                //final String cityNamePref = cityName;
+                //SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
 
                 notifyWeather();
             }

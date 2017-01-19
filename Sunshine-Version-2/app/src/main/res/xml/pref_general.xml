@@ -10,8 +10,10 @@
         <EditTextPreference
             droid:title="@string/pref_location_label"
             droid:key="@string/pref_location_key"
+            droid:hint="@string/pref_zip_hint"
             droid:defaultValue="@string/pref_location_default"
-            droid:inputType="text"
+            droid:inputType="number"
+            droid:maxLength="5"
             droid:singleLine="true"
             />
 
