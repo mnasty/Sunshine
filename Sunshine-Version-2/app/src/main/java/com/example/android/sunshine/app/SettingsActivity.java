@@ -15,14 +15,22 @@
  */
 package com.example.android.sunshine.app;
 
+import android.content.Context;
+import android.content.IntentSender;
+import android.location.Location;
 import android.os.Bundle;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
-import android.widget.Toast;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.util.Log;
 
 import com.example.android.sunshine.app.sync.SunshineSyncAdapter;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationServices;
 
 /**
  * A {@link PreferenceActivity} that presents a set of application settings.
@@ -33,7 +41,16 @@ import com.example.android.sunshine.app.sync.SunshineSyncAdapter;
  * API Guide</a> for more information.
  */
 public class SettingsActivity extends PreferenceActivity
-        implements Preference.OnPreferenceChangeListener {
+        implements Preference.OnPreferenceChangeListener,
+        GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener {
+
+    GoogleApiClient mGoogleApiClient;
+    Context mContext = this;
+    String mLatitude;
+    String mLongitude;
+
+    private final static int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -46,6 +63,25 @@ public class SettingsActivity extends PreferenceActivity
         // updated when the preference changes.
         bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_location_key)));
         bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_units_key)));
+
+
+
+        Preference button = findPreference(getString(R.string.get_loc_shared_prefs_btn));
+        button.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                //on click initiate the request for location coordinates
+                mGoogleApiClient.connect();
+                Log.d("!!!", "!!!Get Location Button Functioning..");
+                return true;
+            }
+        });
+
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API)
+                .build();
     }
 
     /**
@@ -89,14 +125,56 @@ public class SettingsActivity extends PreferenceActivity
 
         //refresh and populate new data
         SunshineSyncAdapter.syncImmediately(this);
-
-        //grab new data from server hot and validate the country code as US or return false and our toast
-        if (!SunshineSyncAdapter.isUsZip) {
-            Toast invalidUSZipToast = Toast.makeText(this, "THE ZIP CODE PROVIDED IS NOT A VALID US ZIP CODE! YOU ARE VIEWING WEATHER FROM: " + SunshineSyncAdapter.cityNameZipValidation + ", " + SunshineSyncAdapter.countryCodeZipValidation, Toast.LENGTH_LONG);
-            invalidUSZipToast.show();
-        }
-
         return true;
     }
 
+    private void handleNewLocation(Location location) {
+
+    }
+
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
+        Log.d("!!!!", "Location services connected.");
+
+        Location location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+
+        if (location != null) {
+            mLatitude = String.valueOf(location.getLatitude());
+            mLongitude = String.valueOf(location.getLongitude());
+        }
+
+        Log.d("!!!LOCATION", "Location appears to be | lat: " + mLatitude + " | long: " + mLongitude);
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+        Log.d("!!!", "Location services suspended. Please reconnect.");
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        if (connectionResult.hasResolution()) {
+            try {
+                // Start an Activity that tries to resolve the error
+                connectionResult.startResolutionForResult(this, CONNECTION_FAILURE_RESOLUTION_REQUEST);
+            } catch (IntentSender.SendIntentException e) {
+                e.printStackTrace();
+            }
+        } else {
+            Log.i("!!!", "Location services connection failed with code " + connectionResult.getErrorCode());
+        }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+    }
+
+    @Override
+    protected void onStop() {
+        if (mGoogleApiClient.isConnected()) {
+            mGoogleApiClient.disconnect();
+        }
+        super.onStop();
+    }
 }

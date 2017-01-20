@@ -17,6 +17,10 @@
             droid:singleLine="true"
             />
 
+        <Preference droid:title="Get Current Location"
+            droid:key="@string/get_loc_shared_prefs_btn"
+            droid:summary="Get Now"/>
+
     </PreferenceCategory>
 
     <PreferenceCategory

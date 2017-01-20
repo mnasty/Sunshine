@@ -21,8 +21,6 @@ import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import com.example.android.sunshine.app.sync.SunshineSyncAdapter;
-
 public class MainActivity extends ActionBarActivity {
 
     private final String LOG_TAG = MainActivity.class.getSimpleName();
@@ -51,8 +49,6 @@ public class MainActivity extends ActionBarActivity {
         {
             mTwoPane = false;
         }
-
-        SunshineSyncAdapter.initializeSyncAdapter(this);
     }
 
     @Override
@@ -80,6 +76,7 @@ public class MainActivity extends ActionBarActivity {
     @Override
     protected void onResume() {
         super.onResume();
+
         String location = Utility.getPreferredLocation( this );
         // update the location in our second pane using the fragment manager
         if (location != null && !location.equals(mLocation)) {

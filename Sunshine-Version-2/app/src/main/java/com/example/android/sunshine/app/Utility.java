@@ -5,13 +5,31 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.text.format.Time;
 import android.util.Log;
+import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import com.example.android.sunshine.app.sync.SunshineSyncAdapter;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import static com.example.android.sunshine.app.sync.SunshineSyncAdapter.isUsZip;
+
 public class Utility {
+
+    public static void showInvalidZipToast(Context c) {
+        Log.d("!!!", "Outside if statement");
+
+        View view = new View(c);
+        //grab new data from server hot and validate the country code as US or return false and our toast
+        if (isUsZip != true) {
+            Log.d("!!!", "Inside if statement");
+            Toast invalidUSZipToast = Toast.makeText(c, "THE ZIP CODE PROVIDED IS NOT A VALID US ZIP CODE! YOU ARE ATTEMPTING TO VIEW WEATHER FROM: " + SunshineSyncAdapter.cityNameZipValidation + ", " + SunshineSyncAdapter.countryCodeZipValidation, Toast.LENGTH_LONG);
+            invalidUSZipToast.show();
+        }
+    }
 
     public static String getPreferredLocation(Context context) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);

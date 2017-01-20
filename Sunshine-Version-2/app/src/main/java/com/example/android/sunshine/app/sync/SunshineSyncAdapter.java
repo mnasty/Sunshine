@@ -176,10 +176,9 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
                 }
             }
         }
-        Log.d(LOG_TAG, "!!!JSON SYNC COMPLETE!");
+        Log.d(LOG_TAG, "!!!SunshineSyncAdapter Complete! Cntrycde ==: " + isUsZip.toString());
         return;
     }
-
 
     /**
      * Helper method to handle insertion of a new location in the weather database.
@@ -228,6 +227,11 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
 
         locationCursor.close();
         return locationId;
+    }
+
+    @Override
+    public Context getContext() {
+        return super.getContext();
     }
 
     /**
@@ -279,6 +283,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
             //make sure we have a US zip code or notify user of foreign weather result
             if ("US".equals(countryCode))
             {
+                isUsZip = true;
                 Log.d(LOG_TAG, "Valid US Postal ZIP Code Provided: " + countryCode);
             }
             else
@@ -289,6 +294,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
                 countryCodeZipValidation = countryCode;
                 //Toast informing user is displayed on the UI thread via SettingsActivity:98
                 isUsZip = false;
+                return;
             }
 
             JSONObject cityCoord = cityJson.getJSONObject(OWM_COORD);
@@ -298,7 +304,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
             long locationId = addLocation(locationSetting, cityName, cityLatitude, cityLongitude);
 
             // Insert the new weather information into the database
-            Vector<ContentValues> cVVector = new Vector<ContentValues>(weatherArray.length());
+            Vector<ContentValues> WeatherTableVector = new Vector<ContentValues>(weatherArray.length());
 
             // OWM returns daily forecasts based upon the local time of the city that is being
             // asked for, which means that we need to know the GMT offset to translate this data
@@ -348,7 +354,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
                         dayForecast.getJSONArray(OWM_WEATHER).getJSONObject(0);
                 description = weatherObject.getString(OWM_DESCRIPTION);
                 weatherId = weatherObject.getInt(OWM_WEATHER_ID);
-                Log.v("weatherId!!!!!", "SunshineService.weatherId value was: " + String.valueOf(weatherId));
+                Log.v("weatherId!!!!!", "SunshineSyncAdapter.weatherId value was: " + String.valueOf(weatherId));
 
                 // Temperatures are in a child object called "temp".
                 JSONObject temperatureObject = dayForecast.getJSONObject(OWM_TEMPERATURE);
@@ -368,34 +374,30 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
                 weatherValues.put(WeatherContract.WeatherEntry.COLUMN_SHORT_DESC, description);
                 weatherValues.put(WeatherContract.WeatherEntry.COLUMN_WEATHER_ID, weatherId);
 
-                cVVector.add(weatherValues);
+                WeatherTableVector.add(weatherValues);
             }
+
+
 
             int inserted = 0;
             // add to database
-            if ( cVVector.size() > 0 ) {
-                ContentValues[] cvArray = new ContentValues[cVVector.size()];
-                cVVector.toArray(cvArray);
-                getContext().getContentResolver().bulkInsert(WeatherContract.WeatherEntry.CONTENT_URI, cvArray);
+            if ( WeatherTableVector.size() > 0 ) {
+                ContentValues[] cvWthrArray = new ContentValues[WeatherTableVector.size()];
+                WeatherTableVector.toArray(cvWthrArray);
+                getContext().getContentResolver().bulkInsert(WeatherContract.WeatherEntry.CONTENT_URI, cvWthrArray);
 
                 // delete old data so we don't build up an endless history
                 getContext().getContentResolver().delete(WeatherContract.WeatherEntry.CONTENT_URI,
                         WeatherContract.WeatherEntry.COLUMN_DATE + " <= ?",
                         new String[] {Long.toString(dayTime.setJulianDay(julianStartDay-1))});
 
-                //setting the location string for the settings activity to the city name
-                //final String cityNamePref = cityName;
-                //SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
-
                 notifyWeather();
             }
 
-            Log.d(LOG_TAG, "ADDED CONTENT VALUES TO DB WITH SUCCESS!!!");
+            Log.d(LOG_TAG, "ADDED CONTENT VALUES TO DB WITH SUCCESS!!!" + inserted + " Inserted");
 
             //notification init
             notifyWeather();
-
-            Log.d(LOG_TAG, "!!!SunshineService Complete. " + inserted + " Inserted");
 
         } catch (JSONException e) {
             Log.e(LOG_TAG, e.getMessage(), e);
