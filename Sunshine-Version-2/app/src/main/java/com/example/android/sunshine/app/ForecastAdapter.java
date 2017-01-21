@@ -68,7 +68,6 @@ public class ForecastAdapter extends CursorAdapter {
         public final TextView humidityView;
         public final TextView windView;
         public final TextView pressureView;
-        public final TextView cityView;
 
         //store our constants in the constructor
         public ViewConstants(View view)
@@ -81,8 +80,6 @@ public class ForecastAdapter extends CursorAdapter {
             humidityView = (TextView) view.findViewById(R.id.list_item_humidity_textview);
             windView = (TextView) view.findViewById(R.id.list_item_wind_textview);
             pressureView = (TextView) view.findViewById(R.id.list_item_pressure_textview);
-            //to implement in a later version perhaps
-            cityView = (TextView) view.findViewById(R.id.list_item_city_name_textview);
         }
     }
 

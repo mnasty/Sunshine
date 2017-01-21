@@ -48,10 +48,17 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
 
     public final String LOG_TAG = SunshineSyncAdapter.class.getSimpleName();
 
-    //vars for zip validation
+    //static vars for zip validation
     public static Boolean isUsZip = true;
-    public static String cityNameZipValidation;
+    public static String cityNameZipValidation = null;
     public static String countryCodeZipValidation;
+
+    //static boolean that evaluates the presence of the internet
+    public static Boolean isConnected = true;
+
+    //static vars for lat and lon (if applicable)
+    public static String syncLat = null;
+    public static String syncLon = null;
 
     // Interval at which to sync with the weather, in milliseconds.
     // 60 seconds (1 minute)  180 = 3 hours
@@ -112,19 +119,46 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
             // http://openweathermap.org/API#forecast
             final String FORECAST_BASE_URL =
                     "http://api.openweathermap.org/data/2.5/forecast/daily?";
-            final String QUERY_PARAM = "zip";
+            final String ZIP_PARAM = "zip";
+            final String LAT_PARAM = "lat";
+            final String LON_PARAM = "lon";
             final String FORMAT_PARAM = "mode";
             final String UNITS_PARAM = "units";
             final String DAYS_PARAM = "cnt";
             final String APPID_PARAM = "APPID";
 
-            Uri builtUri = Uri.parse(FORECAST_BASE_URL).buildUpon()
-                    .appendQueryParameter(QUERY_PARAM, location + ",us")
-                    .appendQueryParameter(FORMAT_PARAM, format)
-                    .appendQueryParameter(UNITS_PARAM, units)
-                    .appendQueryParameter(DAYS_PARAM, Integer.toString(numDays))
-                    .appendQueryParameter(APPID_PARAM, BuildConfig.OPEN_WEATHER_MAP_API_KEY)
-                    .build();
+            Uri builtUri;
+
+            //logic to evaluate weather to get location from zip or lat/lon
+            if (syncLat == null && syncLon == null) {
+                builtUri = Uri.parse(FORECAST_BASE_URL).buildUpon()
+                        .appendQueryParameter(ZIP_PARAM, location + ",us")
+                        .appendQueryParameter(FORMAT_PARAM, format)
+                        .appendQueryParameter(UNITS_PARAM, units)
+                        .appendQueryParameter(DAYS_PARAM, Integer.toString(numDays))
+                        .appendQueryParameter(APPID_PARAM, BuildConfig.OPEN_WEATHER_MAP_API_KEY)
+                        .build();
+                Log.d("!!!LOCATION", "builtUri Success @syncLat&&syncLon == null | NO GPS");
+            }
+            //we are being explicit here with else if to make sure this function always
+            //returns as intended or does not function
+            else if (syncLat != null && syncLon != null)
+            {
+                builtUri = Uri.parse(FORECAST_BASE_URL).buildUpon()
+                        .appendQueryParameter(LAT_PARAM, syncLat)
+                        .appendQueryParameter(LON_PARAM, syncLon)
+                        .appendQueryParameter(FORMAT_PARAM, format)
+                        .appendQueryParameter(UNITS_PARAM, units)
+                        .appendQueryParameter(DAYS_PARAM, Integer.toString(numDays))
+                        .appendQueryParameter(APPID_PARAM, BuildConfig.OPEN_WEATHER_MAP_API_KEY)
+                        .build();
+                Log.d("!!!LOCATION", "builtUri Success @syncLat&&syncLon == x | YES GPS");
+            }
+            else
+            {
+                builtUri = Uri.parse("");
+                Log.d("!!!LOCATION", "builtUri Failed!!!");
+            }
 
             URL url = new URL(builtUri.toString());
             Log.d(LOG_TAG, url.toString() + "!!!!!");
@@ -139,6 +173,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
             StringBuffer buffer = new StringBuffer();
             if (inputStream == null) {
                 // Nothing to do.
+                isConnected = false;
                 return;
             }
             reader = new BufferedReader(new InputStreamReader(inputStream));
@@ -153,6 +188,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
 
             if (buffer.length() == 0) {
                 // Stream was empty.  No point in parsing.
+
                 return;
             }
             forecastJsonStr = buffer.toString();
@@ -176,7 +212,8 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
                 }
             }
         }
-        Log.d(LOG_TAG, "!!!SunshineSyncAdapter Complete! Cntrycde ==: " + isUsZip.toString());
+
+        Log.d("!!!LOCATION " + LOG_TAG, "!!!SunshineSyncAdapter Complete! Cntrycde ==: " + isUsZip.toString());
         return;
     }
 
@@ -280,6 +317,12 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
             JSONObject countryCodeObj = forecastJson.getJSONObject(OWM_CITY);
             String countryCode = countryCodeObj.getString(OWM_COUNTRY_CODE);
 
+            //the instances of cityName and countryCode are preserved temporarily in static
+            //vars so they can be accessed in the ForecastFragment & SettingsActivity to display the necessary toasts
+            //Toast informing user is displayed on the UI thread via call @ SettingsActivity:103
+            cityNameZipValidation = cityName;
+            countryCodeZipValidation = countryCode;
+
             //make sure we have a US zip code or notify user of foreign weather result
             if ("US".equals(countryCode))
             {
@@ -288,11 +331,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
             }
             else
             {
-                //the instances of cityName and countryCode are preserved temporarily in static
-                //vars so they can be accessed in the SettingsActivity to display the necessary toast
-                cityNameZipValidation = cityName;
-                countryCodeZipValidation = countryCode;
-                //Toast informing user is displayed on the UI thread via SettingsActivity:98
+                //Toast informing user is displayed on the UI thread via call @ ForecastFragment:111
                 isUsZip = false;
                 return;
             }
@@ -409,12 +448,26 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
      * Helper method to have the sync adapter sync immediately
      * @param context The context used to access the account service
      */
-    public static void syncImmediately(Context context) {
+    public static void syncImmediately(Context context, String lat, String lon) {
         Bundle bundle = new Bundle();
         bundle.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
         bundle.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
         ContentResolver.requestSync(getSyncAccount(context),
                 context.getString(R.string.content_authority), bundle);
+
+        //evaluate if user was using gps or zip code
+        if (lat != null && lon != null)
+        {
+            Log.d("!!!LOCATION", "GPS or ZIP validation successful @GPS");
+            syncLat = lat;
+            syncLon = lon;
+        }
+        else
+        {
+            Log.d("!!!LOCATION", "GPS or ZIP validation successful @ZIP");
+            syncLat = null;
+            syncLon = null;
+        }
     }
 
     /**
@@ -494,7 +547,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
         /*
          * Finally, let's do a sync to get things started
          */
-        syncImmediately(context);
+        syncImmediately(context, null, null);
     }
 
     public static void initializeSyncAdapter(Context context) {

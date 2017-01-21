@@ -35,6 +35,9 @@ public class MainActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        //check if we have an internet connection
+        Utility.displayNetworkStatus(this);
+
         if (findViewById(R.id.weather_detail_container) != null)
         {
             mTwoPane = true;

@@ -21,6 +21,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 import com.example.android.sunshine.app.data.WeatherContract.LocationEntry;
 import com.example.android.sunshine.app.data.WeatherContract.WeatherEntry;
+import com.example.android.sunshine.app.sync.SunshineSyncAdapter;
 
 /**
  * Manages a local database for weather data.
@@ -32,8 +33,11 @@ public class WeatherDbHelper extends SQLiteOpenHelper {
 
     static final String DATABASE_NAME = "weather.db";
 
+    Context sqlHelperContext;
+
     public WeatherDbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
+        sqlHelperContext = context;
     }
 
     @Override
@@ -69,7 +73,6 @@ public class WeatherDbHelper extends SQLiteOpenHelper {
                 WeatherEntry.COLUMN_PRESSURE + " REAL NOT NULL, " +
                 WeatherEntry.COLUMN_WIND_SPEED + " REAL NOT NULL, " +
                 WeatherEntry.COLUMN_DEGREES + " REAL NOT NULL, " +
-                LocationEntry.COLUMN_CITY_NAME + " TEXT NOT NULL, " +
 
                 // Set up the location column as a foreign key to location table.
                 " FOREIGN KEY (" + WeatherEntry.COLUMN_LOC_KEY + ") REFERENCES " +
@@ -82,6 +85,11 @@ public class WeatherDbHelper extends SQLiteOpenHelper {
 
         sqLiteDatabase.execSQL(SQL_CREATE_LOCATION_TABLE);
         sqLiteDatabase.execSQL(SQL_CREATE_WEATHER_TABLE);
+
+        //since the code in this class only executes once per install, we take advantage of that to
+        //populate our initial weather values after db is created.
+        //we call twice to resolve a strange bug that displays completely
+        SunshineSyncAdapter.syncImmediately(sqlHelperContext, null, null);
     }
 
     @Override

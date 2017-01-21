@@ -19,7 +19,7 @@
 
         <Preference droid:title="Get Current Location"
             droid:key="@string/get_loc_shared_prefs_btn"
-            droid:summary="Get Now"/>
+            droid:summary="Note: Opening Settings after getting location will reset the data to the ZIP code location. Please press again to reset the location preference."/>
 
     </PreferenceCategory>
 

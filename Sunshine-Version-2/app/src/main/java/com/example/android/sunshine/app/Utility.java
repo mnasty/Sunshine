@@ -2,11 +2,12 @@ package com.example.android.sunshine.app;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.location.LocationManager;
+import android.net.ConnectivityManager;
 import android.preference.PreferenceManager;
 import android.text.format.Time;
 import android.util.Log;
 import android.view.View;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.android.sunshine.app.sync.SunshineSyncAdapter;
@@ -26,9 +27,45 @@ public class Utility {
         //grab new data from server hot and validate the country code as US or return false and our toast
         if (isUsZip != true) {
             Log.d("!!!", "Inside if statement");
-            Toast invalidUSZipToast = Toast.makeText(c, "THE ZIP CODE PROVIDED IS NOT A VALID US ZIP CODE! YOU ARE ATTEMPTING TO VIEW WEATHER FROM: " + SunshineSyncAdapter.cityNameZipValidation + ", " + SunshineSyncAdapter.countryCodeZipValidation, Toast.LENGTH_LONG);
+            Toast invalidUSZipToast = Toast.makeText(c, "THE ZIP CODE PROVIDED IS NOT A VALID US ZIP CODE! YOU ARE ATTEMPTING TO VIEW WEATHER FROM: " + SunshineSyncAdapter.cityNameZipValidation + ", " + SunshineSyncAdapter.countryCodeZipValidation + "! PLEASE CHECK ZIP AND TRY AGAIN!", Toast.LENGTH_LONG);
             invalidUSZipToast.show();
         }
+    }
+
+    public static boolean isNetworkAvailable(final Context context) {
+        final ConnectivityManager connectivityManager = ((ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE));
+        return connectivityManager.getActiveNetworkInfo() != null && connectivityManager.getActiveNetworkInfo().isConnected();
+    }
+
+    public static boolean displayNetworkStatus(Context c) {
+        if (!isNetworkAvailable(c)) {
+            Toast noInternetToast = Toast.makeText(c, "Cannot Connect to the Internet! " +
+                    "Is the data network blocked? Do you have cellular data service or WiFi Connected?", Toast.LENGTH_LONG);
+            noInternetToast.show();
+            return false;
+        }
+        else
+        {
+            return true;
+        }
+    }
+
+    public static boolean isGpsAvailable(Context c){
+        final LocationManager manager = (LocationManager) c.getSystemService(Context.LOCATION_SERVICE);
+        if (!manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+            return false;
+        }
+        return true;
+    }
+
+    public static boolean displayGpsStatus(Context c) {
+        if(!isGpsAvailable(c))
+        {
+            Toast noGpsToast = Toast.makeText(c, "GPS Failure! Are location services enabled on this device?", Toast.LENGTH_LONG);
+            noGpsToast.show();
+            return false;
+        }
+        return true;
     }
 
     public static String getPreferredLocation(Context context) {

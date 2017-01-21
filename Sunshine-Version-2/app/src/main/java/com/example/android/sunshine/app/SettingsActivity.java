@@ -15,10 +15,12 @@
  */
 package com.example.android.sunshine.app;
 
-import android.content.Context;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.IntentSender;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.Handler;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
@@ -26,6 +28,7 @@ import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.example.android.sunshine.app.sync.SunshineSyncAdapter;
 import com.google.android.gms.common.ConnectionResult;
@@ -46,7 +49,6 @@ public class SettingsActivity extends PreferenceActivity
         GoogleApiClient.OnConnectionFailedListener {
 
     GoogleApiClient mGoogleApiClient;
-    Context mContext = this;
     String mLatitude;
     String mLongitude;
 
@@ -55,6 +57,8 @@ public class SettingsActivity extends PreferenceActivity
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        Log.d("!!!LOCATION", "onCreate:SettingsActivity called");
 
         // Add 'general' preferences, defined in the XML file
         addPreferencesFromResource(R.xml.pref_general);
@@ -72,7 +76,7 @@ public class SettingsActivity extends PreferenceActivity
             public boolean onPreferenceClick(Preference preference) {
                 //on click initiate the request for location coordinates
                 mGoogleApiClient.connect();
-                Log.d("!!!", "!!!Get Location Button Functioning..");
+                Log.d("!!!LOCATION", "!!!Location Button Functioning..");
                 return true;
             }
         });
@@ -97,6 +101,16 @@ public class SettingsActivity extends PreferenceActivity
         // current value.
         onPreferenceChange(preference, PreferenceManager.getDefaultSharedPreferences(preference.getContext()).getString(preference.getKey(), ""));
     }
+
+    private void bindPreferenceSummaryGpsToZip(Preference preference) {
+        // Set the listener to watch for value changes.
+        preference.setOnPreferenceChangeListener(this);
+
+        // Trigger the listener immediately with the preference's
+        // current value.
+        onPreferenceChange(preference, PreferenceManager.getDefaultSharedPreferences(preference.getContext()).getString(preference.getKey(), ""));
+    }
+
 
     @Override
     public boolean onPreferenceChange(Preference preference, Object value) {
@@ -124,17 +138,18 @@ public class SettingsActivity extends PreferenceActivity
         }
 
         //refresh and populate new data
-        SunshineSyncAdapter.syncImmediately(this);
+        SunshineSyncAdapter.syncImmediately(this, null, null);
         return true;
     }
 
-    private void handleNewLocation(Location location) {
-
+    private void handleNewLocation(String lat, String lon) {
+        SunshineSyncAdapter.syncImmediately(this, lat, lon);
+        Log.d("!!!LOCATION", "!!!handleNewLocation Called Successfully");
     }
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
-        Log.d("!!!!", "Location services connected.");
+        Log.d("!!!!LOCATION", "Location services connected.");
 
         Location location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
 
@@ -142,13 +157,64 @@ public class SettingsActivity extends PreferenceActivity
             mLatitude = String.valueOf(location.getLatitude());
             mLongitude = String.valueOf(location.getLongitude());
         }
+        else
+        {
+            Utility.displayGpsStatus(this);
+        }
+
+        handleNewLocation(mLatitude, mLongitude);
+
+        //dialog to show location is being fetched on UI
+        AlertDialog.Builder alrtDialogBldr = new AlertDialog.Builder(SettingsActivity.this);
+        alrtDialogBldr.setMessage("Fetching Your Current Location. Please Wait..");
+        alrtDialogBldr.setTitle("Fetching Location..");
+        final AlertDialog alertDialog = alrtDialogBldr.create();
+        alertDialog.show();
+
+        // Hide after some seconds
+        final Handler handler  = new Handler();
+        final Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                if (alertDialog.isShowing()) {
+                    alertDialog.dismiss();
+                    //check the status of the internet connection
+                    if (!Utility.displayNetworkStatus(SettingsActivity.this))
+                    {
+                        //if there is no internet connectivity why display a toast with null in it?
+                        return;
+                    }
+                    else if (!Utility.displayGpsStatus(SettingsActivity.this))
+                    {
+                        //if there is no GPS connectivity why display a toast with null in it?
+                        return;
+                    }
+                    else {
+                        //we make sure to grab the city name on the fly here so we only get values after the refresh takes place
+                        Toast curLocationStatus = Toast.makeText(SettingsActivity.this, "Your Location Was Fetched Successfully!" +
+                                " Press the back button to see weather for your location in: " + SunshineSyncAdapter.cityNameZipValidation, Toast.LENGTH_LONG);
+                        curLocationStatus.show();
+                    }
+
+                }
+            }
+        };
+
+        alertDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialog) {
+                handler.removeCallbacks(runnable);
+            }
+        });
+
+        handler.postDelayed(runnable, 3000);
 
         Log.d("!!!LOCATION", "Location appears to be | lat: " + mLatitude + " | long: " + mLongitude);
     }
 
     @Override
     public void onConnectionSuspended(int i) {
-        Log.d("!!!", "Location services suspended. Please reconnect.");
+        Log.d("!!!LOCATION", "Location services suspended. Please reconnect.");
     }
 
     @Override
@@ -161,7 +227,7 @@ public class SettingsActivity extends PreferenceActivity
                 e.printStackTrace();
             }
         } else {
-            Log.i("!!!", "Location services connection failed with code " + connectionResult.getErrorCode());
+            Log.i("!!!LOCATION", "Location services connection failed with code " + connectionResult.getErrorCode());
         }
     }
 
