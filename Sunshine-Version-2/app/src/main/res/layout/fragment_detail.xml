@@ -14,7 +14,7 @@
             android:paddingLeft="24dp"
             android:paddingRight="24dp"
             android:paddingBottom="8dp"
-            android:paddingTop="24dp"
+            android:paddingTop="58dp"
             android:textSize="24sp"/>
 
         <LinearLayout
@@ -35,8 +35,8 @@
                     android:layout_height="wrap_content"
                     android:paddingLeft="24dp"
                     android:paddingRight="24dp"
-                    android:paddingTop="38dp"
-                    android:paddingBottom="24dp"
+                    android:paddingTop="16dp"
+                    android:paddingBottom="16dp"
                     android:textSize="48sp" />
 
                 <TextView
@@ -46,8 +46,8 @@
                     android:textSize="34sp"
                     android:paddingLeft="28dp"
                     android:paddingRight="28dp"
-                    android:paddingBottom="28dp"
-                    android:paddingTop="28dp" />
+                    android:paddingBottom="22dp"
+                    android:paddingTop="16dp" />
             </LinearLayout>
 
             <LinearLayout

@@ -10,7 +10,7 @@ Screenshots:
 
 ![Main Activity Menu](https://cloud.githubusercontent.com/assets/20830151/22175066/64ee5144-dfb3-11e6-8416-05ce7e743bb8.png)
 
-![Detail Activity](https://cloud.githubusercontent.com/assets/20830151/21962268/3880f29a-dae7-11e6-8d88-be392120e0d2.png)
+![Detail Activity w/ads](https://cloud.githubusercontent.com/assets/20830151/22192572/bdb790b8-e0fa-11e6-88fc-287c4d7a64a2.png)
 
 ![MenuItemCompat - ShareActionProvider](https://cloud.githubusercontent.com/assets/20830151/21962265/3880b83e-dae7-11e6-8deb-85f99ca49c65.png)
 
