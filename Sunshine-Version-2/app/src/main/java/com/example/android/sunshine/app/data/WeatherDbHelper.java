@@ -88,7 +88,6 @@ public class WeatherDbHelper extends SQLiteOpenHelper {
 
         //since the code in this class only executes once per install, we take advantage of that to
         //populate our initial weather values after db is created.
-        //we call twice to resolve a strange bug that displays completely
         SunshineSyncAdapter.syncImmediately(sqlHelperContext, null, null);
     }
 
